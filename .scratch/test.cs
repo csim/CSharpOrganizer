@@ -13,8 +13,8 @@ public class Class2
     public void Method1() { }
 
     public bool Text1 => _test1;
-    protected bool Text2 => _test;
-    public string Test3 { get; set; }
+    protected bool Text3 => _test;
+    public string Text2 { get; set; }
 
     public Class1(string text1)
     {
@@ -34,14 +34,22 @@ public class Class2
     }
 
     private bool _test2 = true;
-    private bool _test1 = true;
+    private bool _test3 = true;
+    public bool _test1 = true;
 }
 
 public class Class1
 {
     private void Private1() { }
 
-    public void Method2() { }
+    private void Method4() { }
+
+    public void Method2()
+    {
+        var x = 1;
+
+        return x;
+    }
 
     public void Method1() { }
 

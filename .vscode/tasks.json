@@ -1,0 +1,87 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "./src/CSharpOrganizer.slnx",
+        "/property:GenerateFullPaths=true",
+      ],
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "clear": true,
+        "echo": true,
+        "reveal": "never",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "format",
+      "command": "csharpier",
+      "type": "process",
+      "args": [
+        "format",
+        "./src/"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "clear": true,
+        "echo": true,
+        "reveal": "never",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "test",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "test",
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/src/CSharpOrganizer.Tests"
+      },
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "test-watch",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "watch",
+        "test",
+        "--verbosity",
+        "quiet"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/src/Koalas.Tests"
+      },
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "presentation": {
+        "clear": true,
+        "echo": true,
+        "reveal": "never",
+        "focus": false,
+        "panel": "shared"
+      },
+      "isBackground": true
+    }
+  ]
+}

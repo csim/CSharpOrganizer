@@ -1,0 +1,5 @@
+**/*.config
+**/*.props
+**/*.csproj
+**/*.xml
+**/*.json

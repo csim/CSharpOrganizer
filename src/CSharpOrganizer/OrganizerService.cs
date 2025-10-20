@@ -1,11 +1,15 @@
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
 namespace CSharpOrganizer;
 
-public static class Organizer
+public static class OrganizerService
 {
     public static string OrganizeFile(string fileCode)
     {
         // Parse the code
-        Microsoft.CodeAnalysis.SyntaxTree tree = CSharpSyntaxTree.ParseText(fileCode);
+        SyntaxTree tree = CSharpSyntaxTree.ParseText(fileCode);
         CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
 
         // Find all classes and enums

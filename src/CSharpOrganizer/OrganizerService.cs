@@ -17,6 +17,20 @@ public static class OrganizerService
         return targetTree.ToFullString();
     }
 
+    private static int AccessModifierPriority(SyntaxTokenList modifiers)
+    {
+        if (modifiers.Any(m => m.IsKind(SyntaxKind.PublicKeyword)))
+            return 0;
+        if (modifiers.Any(m => m.IsKind(SyntaxKind.InternalKeyword)))
+            return 1;
+        if (modifiers.Any(m => m.IsKind(SyntaxKind.ProtectedKeyword)))
+            return 2;
+        if (modifiers.Any(m => m.IsKind(SyntaxKind.PrivateKeyword)))
+            return 3;
+
+        return 3; //  treat as private
+    }
+
     private static CompilationUnitSyntax NormalizeBlankLines(CompilationUnitSyntax sourceTree)
     {
         List<MemberDeclarationSyntax> targetMembers = sourceTree.Members.ToList();
@@ -32,7 +46,7 @@ public static class OrganizerService
                 targetMembers[i] = NormalizeBlankLines(classDeclaration);
             }
 
-            targetMembers[i] = AddBlankLine(targetMembers[i]);
+            targetMembers[i] = SetTrailingBlankLine(targetMembers[i]);
         }
 
         return sourceTree.WithMembers(SyntaxFactory.List(targetMembers));
@@ -50,51 +64,43 @@ public static class OrganizerService
             m is FieldDeclarationSyntax
         );
 
-        if (lastField != null)
-        {
-            int lastFieldIndex = targetMembers.IndexOf(lastField);
-            if (lastFieldIndex != targetMembers.Count - 1)
-            {
-                targetMembers[lastFieldIndex] = AddBlankLine(targetMembers[lastFieldIndex]);
-            }
-        }
+        int lastFieldIndex = lastField == null ? -1 : targetMembers.IndexOf(lastField);
+
+        // if (lastField != null)
+        // {
+        //     if (lastFieldIndex != targetMembers.Count - 1)
+        //     {
+        //         targetMembers[lastFieldIndex] = SetTrailingBlankLine(targetMembers[lastFieldIndex]);
+        //     }
+        // }
 
         for (int i = 0; i < targetMembers.Count; i++)
         {
-            if (targetMembers[i] is PropertyDeclarationSyntax)
+            // if (targetMembers[i] is FieldDeclarationSyntax)
+            // {
+            //     targetMembers[i] = SetTrailingBlankLine(
+            //         targetMembers[i],
+            //         i == lastFieldIndex && lastFieldIndex != targetMembers.Count - 1 ? 1 : 0
+            //     );
+            // }
+
+            if (
+                targetMembers[i]
+                is PropertyDeclarationSyntax
+                    or ConstructorDeclarationSyntax
+                    or MethodDeclarationSyntax
+            )
             {
-                targetMembers[i] = AddBlankLine(targetMembers[i]);
+                targetMembers[i] = SetTrailingBlankLine(targetMembers[i]);
             }
 
             if (targetMembers[i] is ClassDeclarationSyntax classDeclaration)
             {
-                targetMembers[i] = AddBlankLine(NormalizeBlankLines(classDeclaration));
+                targetMembers[i] = SetTrailingBlankLine(NormalizeBlankLines(classDeclaration));
             }
         }
 
         return sourceClass.WithMembers(SyntaxFactory.List(targetMembers));
-    }
-
-    private static MemberDeclarationSyntax AddBlankLine(MemberDeclarationSyntax source)
-    {
-        return source.WithTrailingTrivia(
-            SyntaxFactory.CarriageReturnLineFeed,
-            SyntaxFactory.CarriageReturnLineFeed
-        );
-    }
-
-    private static int AccessModifierPriority(SyntaxTokenList modifiers)
-    {
-        if (modifiers.Any(m => m.IsKind(SyntaxKind.PublicKeyword)))
-            return 0;
-        if (modifiers.Any(m => m.IsKind(SyntaxKind.InternalKeyword)))
-            return 1;
-        if (modifiers.Any(m => m.IsKind(SyntaxKind.ProtectedKeyword)))
-            return 2;
-        if (modifiers.Any(m => m.IsKind(SyntaxKind.PrivateKeyword)))
-            return 3;
-
-        return 3; //  treat as private
     }
 
     private static ClassDeclarationSyntax OrganizeClass(ClassDeclarationSyntax sourceClass)
@@ -185,5 +191,21 @@ public static class OrganizerService
         ];
 
         return sourceRoot.WithMembers(SyntaxFactory.List(reorganizedMembers));
+    }
+
+    private static MemberDeclarationSyntax SetTrailingBlankLine(
+        MemberDeclarationSyntax source,
+        int count = 1
+    )
+    {
+        if (count == 0)
+        {
+            return source.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+        }
+
+        return source.WithTrailingTrivia(
+            SyntaxFactory.CarriageReturnLineFeed,
+            SyntaxFactory.CarriageReturnLineFeed
+        );
     }
 }

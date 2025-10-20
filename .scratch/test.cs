@@ -1,5 +1,7 @@
 using System.Reflection.Metadata;
 
+namespace TestNamespace;
+
 public enum Enum1
 {
     Value1,

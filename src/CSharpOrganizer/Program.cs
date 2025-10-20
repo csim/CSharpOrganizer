@@ -4,6 +4,9 @@ public static class Program
 {
     public static int Main(string[] args)
     {
+        //args = [@"C:\src\koalas\src\Koalas\Text\TextFieldSetItemBuilder.cs"];
+        args = [@"C:\src\CSharpOrganizer\.scratch\test.cs"];
+
         if (args.Length == 0)
         {
             Console.WriteLine("Usage: csharp-organizer <file-path-or-directory>");

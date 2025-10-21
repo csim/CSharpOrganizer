@@ -15,6 +15,8 @@ public enum Enum1
 
 public class Class2
 {
+    // this is a test of a comment
+    // this is a test of a comment
     public void Method2() { }
 
     public void Method1() { }
@@ -35,11 +37,6 @@ public class Class2
 
     public class SubClass1
     {
-        public SubClass1() {
-
-        }
-
-        private bool _bool1;
     }
 
     private bool _test2 = true;

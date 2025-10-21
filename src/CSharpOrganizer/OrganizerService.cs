@@ -12,7 +12,7 @@ public static class OrganizerService
     {
         SyntaxTree sourceTree = CSharpSyntaxTree.ParseText(fileCode);
 
-        var sourceRoot = sourceTree.GetRoot();
+        SyntaxNode sourceRoot = sourceTree.GetRoot();
 
         SyntaxNode targetTree = Organize(sourceRoot);
 
@@ -296,10 +296,57 @@ public static class OrganizerService
         );
     }
 
+    private static TSyntax WithoutLeadingBlankLines<TSyntax>(this TSyntax source)
+        where TSyntax : SyntaxNode
+    {
+        List<SyntaxTrivia> leadingTrivia = source.GetLeadingTrivia().ToList();
+        List<SyntaxTrivia> blankLines = leadingTrivia
+            .TakeWhile(t => t.IsKind(SyntaxKind.EndOfLineTrivia))
+            .ToList();
+
+        return source.WithLeadingTrivia(new SyntaxTriviaList(leadingTrivia.Except(blankLines)));
+    }
+
+    private static TSyntax WithoutTrailingBlankLines<TSyntax>(this TSyntax source)
+        where TSyntax : SyntaxNode
+    {
+        //return source;
+        List<SyntaxTrivia> scanTrivia = source.GetTrailingTrivia().ToList();
+        scanTrivia.Reverse();
+
+        int blankLineCount = scanTrivia
+            .TakeWhile(t => t.IsKind(SyntaxKind.EndOfLineTrivia))
+            .Count();
+
+        // var lastIndex = trailingTrivia.Count - 1;
+        // for (int i = lastIndex; i >= 0; i--)
+        // {
+        //     if (i == lastIndex && trailingTrivia[i].IsKind(SyntaxKind.EndOfLineTrivia) {
+        //         continue;
+        //     }
+
+        //     if (trailingTrivia[i].IsKind(SyntaxKind.EndOfLineTrivia) {
+        //     }
+        // }
+
+        List<SyntaxTrivia> cleanedTrivia = source
+            .GetTrailingTrivia()
+            .Take(scanTrivia.Count - blankLineCount)
+            .ToList();
+
+        return source.WithTrailingTrivia(new SyntaxTriviaList(cleanedTrivia));
+
+        // var cleanedTrivia = trailingTrivia.Except(blankLines).ToList();
+
+        // return source
+        //     .WithTrailingTrivia(new SyntaxTriviaList(cleanedTrivia))
+        //     .WithOneTrailingBlankLine();
+    }
+
     /// <summary>
     /// Creates a new node from this node without leading blank lines but preserves indentation.
     /// </summary>
-    private static TSyntax WithoutLeadingBlankLines<TSyntax>(this TSyntax syntax)
+    private static TSyntax WithoutLeadingBlankLines2<TSyntax>(this TSyntax syntax)
         where TSyntax : SyntaxNode
     {
         SyntaxTriviaList leadingTrivia = syntax.GetLeadingTrivia();
@@ -347,7 +394,7 @@ public static class OrganizerService
     /// <summary>
     /// Creates a new node from this node without trailing blank lines but preserves comments.
     /// </summary>
-    private static TSyntax WithoutTrailingBlankLines<TSyntax>(this TSyntax syntax)
+    private static TSyntax WithoutTrailingBlankLines2<TSyntax>(this TSyntax syntax)
         where TSyntax : SyntaxNode
     {
         SyntaxTriviaList trailingTrivia = syntax.GetTrailingTrivia();

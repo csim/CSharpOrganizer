@@ -1,6 +1,11 @@
+using Newtonsoft;
 using System.Reflection.Metadata;
-
+using System;
+using System.Data;
 namespace TestNamespace;
+
+
+
 
 public enum Enum1
 {
@@ -14,7 +19,7 @@ public class Class2
 
     public void Method1() { }
 
-    public bool Text1 => _test1;
+    public bool Text1 => _test1; // test comment
     protected bool Text3 => _test;
     public string Text2 { get; set; }
 
@@ -30,7 +35,9 @@ public class Class2
 
     public class SubClass1
     {
-        public SubClass1() { }
+        public SubClass1() {
+
+        }
 
         private bool _bool1;
     }

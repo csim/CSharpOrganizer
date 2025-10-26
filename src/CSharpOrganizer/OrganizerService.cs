@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Net.NetworkInformation;
+using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -8,17 +9,16 @@ namespace CSharpOrganizer;
 
 public static class OrganizerService
 {
-    public static string OrganizeFile(string fileCode)
+    private static readonly SyntaxTrivia _lineEnding = SyntaxFactory.CarriageReturnLineFeed;
+
+    public static string OrganizeFile(string code)
     {
-        SyntaxTree sourceTree = CSharpSyntaxTree.ParseText(fileCode);
-
-        SyntaxNode sourceRoot = sourceTree.GetRoot();
-
-        SyntaxNode targetTree = Organize(sourceRoot);
-
+        SyntaxTree sourceTree = CSharpSyntaxTree.ParseText(code);
+        CompilationUnitSyntax sourceRoot = (CompilationUnitSyntax)sourceTree.GetRoot();
+        CompilationUnitSyntax targetTree = Organize(sourceRoot);
         targetTree = NormalizeBlankLines(targetTree);
 
-        return targetTree.ToFullString();
+        return targetTree.ToFullString().Trim();
     }
 
     private static int AccessModifierPriority(SyntaxTokenList modifiers)
@@ -35,41 +35,32 @@ public static class OrganizerService
         return 3; //  treat as private
     }
 
-    private static SyntaxNode NormalizeBlankLines(SyntaxNode source)
+    private static SyntaxList<UsingDirectiveSyntax> NormalizeBlankLines(
+        SyntaxList<UsingDirectiveSyntax> sourceUsings
+    )
     {
-        return source switch
+        List<UsingDirectiveSyntax> usings = sourceUsings
+            .OrderBy(u =>
+                u.Name?.ToString().StartsWith("System", StringComparison.OrdinalIgnoreCase) == true
+                    ? 0
+                    : 1
+            )
+            .ThenBy(u => u.Name?.ToString() ?? string.Empty)
+            .ToList();
+
+        for (int i = 0; i < sourceUsings.Count; i++)
         {
-            CompilationUnitSyntax item => NormalizeBlankLines(item),
-            NamespaceDeclarationSyntax item => NormalizeBlankLines(item),
-            ClassDeclarationSyntax item => NormalizeBlankLines(item),
-            InterfaceDeclarationSyntax item => NormalizeBlankLines(item),
-            _ => throw new ArgumentException(source.GetType().Name),
-            //_ => source,
-        };
+            usings[i] = usings[i].WithoutBlankLineTrivia();
+        }
+
+        return new SyntaxList<UsingDirectiveSyntax>(usings);
     }
 
     private static CompilationUnitSyntax NormalizeBlankLines(CompilationUnitSyntax source)
     {
         if (source.Usings.Count > 0)
         {
-            List<UsingDirectiveSyntax> usings = source
-                .Usings.OrderBy(u =>
-                    u.Name?.ToString().StartsWith("System", StringComparison.OrdinalIgnoreCase)
-                    == true
-                        ? 0
-                        : 1
-                )
-                .ThenBy(u => u.Name?.ToString() ?? string.Empty)
-                .ToList();
-
-            for (int i = 0; i < source.Usings.Count; i++)
-            {
-                usings[i] = usings[i].WithoutLeadingBlankLines().WithoutTrailingBlankLines();
-            }
-
-            // usings[^1] = usings[^1].WithOneTrailingBlankLine();
-
-            source = source.WithUsings(new SyntaxList<UsingDirectiveSyntax>(usings));
+            source = source.WithUsings(NormalizeBlankLines(source.Usings));
         }
 
         return source.WithMembers(NormalizeBlankLines(source.Members));
@@ -79,14 +70,21 @@ public static class OrganizerService
         BaseNamespaceDeclarationSyntax source
     )
     {
-        List<MemberDeclarationSyntax> members = NormalizeBlankLines(source.Members).ToList();
+        List<MemberDeclarationSyntax> newMembers = NormalizeBlankLines(source.Members).ToList();
 
-        if (source is FileScopedNamespaceDeclarationSyntax && members.Any())
+        if (source.Usings.Count > 0)
         {
-            members[0] = members[0].WithOneLeadingBlankLine();
+            List<UsingDirectiveSyntax> newUsings = NormalizeBlankLines(source.Usings).ToList();
+            newUsings[0] = newUsings[0].WithOneLeadingBlankLine();
+            source = source.WithUsings(new SyntaxList<UsingDirectiveSyntax>(newUsings));
+
+            if (newMembers.Count > 0)
+            {
+                newMembers[0] = newMembers[0].WithOneLeadingBlankLine();
+            }
         }
 
-        return source.WithMembers(new SyntaxList<MemberDeclarationSyntax>(members));
+        return source.WithMembers(new SyntaxList<MemberDeclarationSyntax>(newMembers));
     }
 
     private static ClassDeclarationSyntax NormalizeBlankLines(ClassDeclarationSyntax source)
@@ -108,74 +106,51 @@ public static class OrganizerService
 
         List<MemberDeclarationSyntax> targetMembers = sourceMembers.ToList();
 
-        // Reset blank lines
-        for (int i = 0; i < targetMembers.Count; i++)
-        {
-            targetMembers[i] = targetMembers[i]
-                .WithoutLeadingBlankLines()
-                .WithoutTrailingBlankLines();
-        }
-
-        if (targetMembers.Any(m => m is FileScopedNamespaceDeclarationSyntax))
-        {
-            targetMembers[0] = targetMembers[0].WithOneLeadingBlankLine();
-        }
-
         // Process children
         for (int i = 0; i < targetMembers.Count; i++)
         {
-            if (targetMembers[i] is BaseNamespaceDeclarationSyntax namespaceDeclaration)
+            targetMembers[i] = targetMembers[i] switch
             {
-                targetMembers[i] = NormalizeBlankLines(namespaceDeclaration);
-            }
-
-            if (targetMembers[i] is ClassDeclarationSyntax classDeclaration)
-            {
-                targetMembers[i] = NormalizeBlankLines(classDeclaration);
-            }
+                BaseNamespaceDeclarationSyntax item => NormalizeBlankLines(item),
+                ClassDeclarationSyntax item => NormalizeBlankLines(item),
+                InterfaceDeclarationSyntax item => NormalizeBlankLines(item),
+                _ => targetMembers[i],
+            };
         }
 
-        MemberDeclarationSyntax? lastField = targetMembers.LastOrDefault(m =>
-            m is FieldDeclarationSyntax
-        );
-
-        // Set last field trailing blank line
-        int lastFieldIndex = lastField == null ? -1 : targetMembers.IndexOf(lastField);
-        if (lastFieldIndex >= 0 && lastFieldIndex != targetMembers.Count - 1)
+        for (int i = 0; i < targetMembers.Count; i++)
         {
-            targetMembers[lastFieldIndex] = targetMembers[lastFieldIndex]
-                .WithOneTrailingBlankLine();
-        }
+            if (targetMembers[i] is FieldDeclarationSyntax)
+            {
+                targetMembers[i] = targetMembers[i].WithoutBlankLineTrivia();
+            }
 
-        for (int i = 0; i < targetMembers.Count - 1; i++)
-        {
             if (
                 targetMembers[i]
-                is InterfaceDeclarationSyntax
+                is BaseNamespaceDeclarationSyntax
                     or ClassDeclarationSyntax
                     or PropertyDeclarationSyntax
                     or ConstructorDeclarationSyntax
                     or MethodDeclarationSyntax
+                    or EnumDeclarationSyntax
             )
             {
-                targetMembers[i] = targetMembers[i].WithOneTrailingBlankLine();
+                if (i == 0)
+                {
+                    targetMembers[i] = targetMembers[i]
+                        .WithoutLeadingBlankLines()
+                        .WithoutTrailingBlankLines();
+                }
+                else
+                {
+                    targetMembers[i] = targetMembers[i]
+                        .WithOneLeadingBlankLine()
+                        .WithoutTrailingBlankLines();
+                }
             }
         }
 
         return new SyntaxList<MemberDeclarationSyntax>(targetMembers);
-    }
-
-    private static SyntaxNode Organize(SyntaxNode source)
-    {
-        return source switch
-        {
-            CompilationUnitSyntax root => Organize(root),
-            NamespaceDeclarationSyntax i => Organize(i),
-            ClassDeclarationSyntax i => Organize(i),
-            InterfaceDeclarationSyntax i => Organize(i),
-            _ => throw new ArgumentException(source.GetType().Name),
-            //_ => source,
-        };
     }
 
     private static CompilationUnitSyntax Organize(CompilationUnitSyntax node)
@@ -235,12 +210,12 @@ public static class OrganizerService
             .OfType<MethodDeclarationSyntax>()
             .OrderBy(m => AccessModifierPriority(m.Modifiers))
             .ThenBy(m => m.Identifier.Text)
+            .ThenBy(m => m.TypeParameterList?.Parameters.Count ?? 0)
             .ThenBy(m => m.ParameterList.Parameters.Count)
             .ToList();
 
         List<ClassDeclarationSyntax> classes = sourceMembers
             .OfType<ClassDeclarationSyntax>()
-            .OrderBy(t => AccessModifierPriority(t.Modifiers))
             .Select(Organize)
             .ToList();
 
@@ -284,155 +259,76 @@ public static class OrganizerService
     private static TSyntax WithOneLeadingBlankLine<TSyntax>(this TSyntax source)
         where TSyntax : SyntaxNode
     {
-        return source.WithLeadingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+        List<SyntaxTrivia> leadingTrivia = source
+            .WithoutLeadingBlankLines()
+            .GetLeadingTrivia()
+            .ToList();
+        leadingTrivia.Insert(0, _lineEnding);
+
+        return source.WithLeadingTrivia(new SyntaxTriviaList(leadingTrivia));
     }
 
     private static TSyntax WithOneTrailingBlankLine<TSyntax>(this TSyntax source)
         where TSyntax : SyntaxNode
     {
-        return source.WithTrailingTrivia(
-            SyntaxFactory.CarriageReturnLineFeed,
-            SyntaxFactory.CarriageReturnLineFeed
-        );
+        List<SyntaxTrivia> trailingTrivia = source
+            .WithoutTrailingBlankLines()
+            .GetTrailingTrivia()
+            .ToList();
+        trailingTrivia.Add(_lineEnding);
+
+        return source.WithTrailingTrivia(new SyntaxTriviaList(trailingTrivia));
+    }
+
+    private static TSyntax WithoutBlankLineTrivia<TSyntax>(this TSyntax source)
+        where TSyntax : SyntaxNode
+    {
+        return source.WithoutLeadingBlankLines().WithoutTrailingBlankLines();
     }
 
     private static TSyntax WithoutLeadingBlankLines<TSyntax>(this TSyntax source)
         where TSyntax : SyntaxNode
     {
-        List<SyntaxTrivia> leadingTrivia = source.GetLeadingTrivia().ToList();
-        List<SyntaxTrivia> blankLines = leadingTrivia
-            .TakeWhile(t => t.IsKind(SyntaxKind.EndOfLineTrivia))
-            .ToList();
+        SyntaxTriviaList trailingTrivia = source.GetLeadingTrivia();
+        List<SyntaxTrivia> cleanedTrivia = [];
 
-        return source.WithLeadingTrivia(new SyntaxTriviaList(leadingTrivia.Except(blankLines)));
+        bool strip = true;
+        for (int i = 0; i < trailingTrivia.Count; i++)
+        {
+            if (strip && trailingTrivia[i].IsKind(SyntaxKind.EndOfLineTrivia))
+            {
+                continue;
+            }
+
+            strip = false;
+            cleanedTrivia.Add(trailingTrivia[i]);
+        }
+
+        return source.WithLeadingTrivia(new SyntaxTriviaList(cleanedTrivia));
     }
 
     private static TSyntax WithoutTrailingBlankLines<TSyntax>(this TSyntax source)
         where TSyntax : SyntaxNode
     {
-        //return source;
-        List<SyntaxTrivia> scanTrivia = source.GetTrailingTrivia().ToList();
-        scanTrivia.Reverse();
-
-        int blankLineCount = scanTrivia
-            .TakeWhile(t => t.IsKind(SyntaxKind.EndOfLineTrivia))
-            .Count();
-
-        // var lastIndex = trailingTrivia.Count - 1;
-        // for (int i = lastIndex; i >= 0; i--)
-        // {
-        //     if (i == lastIndex && trailingTrivia[i].IsKind(SyntaxKind.EndOfLineTrivia) {
-        //         continue;
-        //     }
-
-        //     if (trailingTrivia[i].IsKind(SyntaxKind.EndOfLineTrivia) {
-        //     }
-        // }
-
-        List<SyntaxTrivia> cleanedTrivia = source
-            .GetTrailingTrivia()
-            .Take(scanTrivia.Count - blankLineCount)
-            .ToList();
-
-        return source.WithTrailingTrivia(new SyntaxTriviaList(cleanedTrivia));
-
-        // var cleanedTrivia = trailingTrivia.Except(blankLines).ToList();
-
-        // return source
-        //     .WithTrailingTrivia(new SyntaxTriviaList(cleanedTrivia))
-        //     .WithOneTrailingBlankLine();
-    }
-
-    /// <summary>
-    /// Creates a new node from this node without leading blank lines but preserves indentation.
-    /// </summary>
-    private static TSyntax WithoutLeadingBlankLines2<TSyntax>(this TSyntax syntax)
-        where TSyntax : SyntaxNode
-    {
-        SyntaxTriviaList leadingTrivia = syntax.GetLeadingTrivia();
+        SyntaxTriviaList trailingTrivia = source.GetTrailingTrivia();
         List<SyntaxTrivia> cleanedTrivia = [];
 
-        // Find the last whitespace trivia that represents indentation
-        // (not followed by EndOfLine)
-        SyntaxTrivia? indentation = null;
-
-        for (int i = leadingTrivia.Count - 1; i >= 0; i--)
-        {
-            SyntaxTrivia trivia = leadingTrivia[i];
-
-            if (trivia.IsKind(SyntaxKind.WhitespaceTrivia))
-            {
-                // If this is the last trivia or not followed by EndOfLine,
-                // it's likely indentation
-                if (i == leadingTrivia.Count - 1)
-                {
-                    indentation = trivia;
-                    break;
-                }
-            }
-            else if (!trivia.IsKind(SyntaxKind.EndOfLineTrivia))
-            {
-                // Found non-whitespace, non-EOL trivia (comments, etc.)
-                // Keep everything from this point forward
-                for (int j = i; j < leadingTrivia.Count; j++)
-                {
-                    cleanedTrivia.Add(leadingTrivia[j]);
-                }
-                return syntax.WithLeadingTrivia(cleanedTrivia);
-            }
-        }
-
-        // If we only found whitespace and EOL, preserve the indentation
-        if (indentation.HasValue)
-        {
-            cleanedTrivia.Add(indentation.Value);
-        }
-
-        return syntax.WithLeadingTrivia(cleanedTrivia);
-    }
-
-    /// <summary>
-    /// Creates a new node from this node without trailing blank lines but preserves comments.
-    /// </summary>
-    private static TSyntax WithoutTrailingBlankLines2<TSyntax>(this TSyntax syntax)
-        where TSyntax : SyntaxNode
-    {
-        SyntaxTriviaList trailingTrivia = syntax.GetTrailingTrivia();
-        List<SyntaxTrivia> cleanedTrivia = [];
-
-        // Process trivia from the end backwards to remove trailing blank lines
-        bool hasNonBlankContent = false;
-
+        bool strip = true;
         for (int i = trailingTrivia.Count - 1; i >= 0; i--)
         {
-            SyntaxTrivia trivia = trailingTrivia[i];
+            if (strip && trailingTrivia[i].IsKind(SyntaxKind.EndOfLineTrivia))
+            {
+                continue;
+            }
 
-            if (trivia.IsKind(SyntaxKind.EndOfLineTrivia))
-            {
-                // Only keep EndOfLine if we've found non-blank content
-                if (hasNonBlankContent)
-                {
-                    cleanedTrivia.Insert(0, trivia);
-                }
-            }
-            else if (trivia.IsKind(SyntaxKind.WhitespaceTrivia))
-            {
-                // Only keep whitespace if we've found non-blank content
-                if (hasNonBlankContent)
-                {
-                    cleanedTrivia.Insert(0, trivia);
-                }
-            }
-            else
-            {
-                // Found meaningful trivia (comments, etc.)
-                hasNonBlankContent = true;
-                cleanedTrivia.Insert(0, trivia);
-            }
+            strip = false;
+            cleanedTrivia.Add(trailingTrivia[i]);
         }
 
-        return syntax
-            .WithTrailingTrivia(cleanedTrivia)
-            .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+        cleanedTrivia.Reverse();
+        cleanedTrivia = cleanedTrivia.ToList();
+        cleanedTrivia.Add(_lineEnding);
+
+        return source.WithTrailingTrivia(new SyntaxTriviaList(cleanedTrivia));
     }
 }

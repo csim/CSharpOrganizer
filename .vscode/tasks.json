@@ -53,6 +53,26 @@
       "problemMatcher": "$msCompile",
       "group": {
         "kind": "test",
+        "isDefault": false
+      },
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "run",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "run",
+      ],
+      "options": {
+        "saveBeforeRun": "allFiles",
+        "cwd": "${workspaceFolder}/src/CSharpOrganizer"
+      },
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "test",
         "isDefault": true
       },
       "presentation": {

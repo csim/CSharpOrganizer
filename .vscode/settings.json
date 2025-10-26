@@ -1,8 +1,4 @@
 {
-  "subtleBrackets.style": {
-    "borderWidth": "1px",
-    "borderStyle": "none none solid none"
-  },
   "editorconfig.generateAuto": false,
   "dotnet.completion.showCompletionItemsFromUnimportedNamespaces": true,
   "files.associations": {

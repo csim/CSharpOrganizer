@@ -1,24 +1,34 @@
+using System.Diagnostics;
+using System.Drawing;
+using System.Text;
+
 namespace CSharpOrganizer;
 
 public static class Program
 {
-    public static int Main(string[] args)
+    public static int Main()
     {
+        string[] args;
         //args = [@"C:\src\koalas\src\Koalas\Text\TextFieldSetItemBuilder.cs"];
-        args = [@"C:\src\CSharpOrganizer\.scratch\test.cs"];
+        //args = [@"C:\src\koalas\src\Koalas\Text\"];
+        args = [@"C:\prose_wip\tformula\Transformation.Formula\"];
+        // args =
+        // [
+        //     @"C:\prose_wip\tformula\Transformation.Formula\Semantics\Extensions\IProgramNodeBuilder.Extension.cs",
+        // ];
+        //args = [@"C:\src\CSharpOrganizer\.scratch\test.cs"];
+        //args = [@"C:\src\CSharpOrganizer\.scratch\test1.cs"];
 
         if (args.Length == 0)
         {
-            Console.WriteLine("Usage: csharp-organizer <file-path-or-directory>");
-            Console.WriteLine(
-                "Organizes C# code in the specified file or all .cs files in a directory."
-            );
-            Console.WriteLine();
-            Console.WriteLine("Examples:");
-            Console.WriteLine("  csharp-organizer MyClass.cs");
-            Console.WriteLine("  csharp-organizer src/Services/UserService.cs");
-            Console.WriteLine("  csharp-organizer src/");
-            Console.WriteLine("  csharp-organizer .");
+            WriteLine("Usage: csharp-organizer <file-path-or-directory>");
+            WriteLine("Organizes C# code in the specified file or all .cs files in a directory.");
+            WriteLine();
+            WriteLine("Examples:");
+            WriteLine("  csharp-organizer MyClass.cs");
+            WriteLine("  csharp-organizer src/Services/UserService.cs");
+            WriteLine("  csharp-organizer src/");
+            WriteLine("  csharp-organizer .");
 
             return 1;
         }
@@ -27,25 +37,38 @@ public static class Program
 
         try
         {
+            Stopwatch watch = Stopwatch.StartNew();
+            int ret = 0;
+
             // Check if the path is a directory
             if (Directory.Exists(path))
             {
-                return ProcessDirectory(path);
+                ret = ProcessDirectory(path);
             }
 
             if (File.Exists(path))
             {
-                return ProcessFile(path);
+                ret = ProcessFile(path);
+            }
+
+            if (ret == 0)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                WriteLine($"{watch.ElapsedMilliseconds:N0}ms");
+                Console.ResetColor();
+
+                return 0;
             }
 
             Console.Error.WriteLine($"Error: Path '{path}' not found.");
-            return 1;
+
+            return ret;
         }
         catch (Exception ex)
         {
-            throw;
-            //Console.Error.WriteLine($"Error processing path: {ex.Message}");
-            //return 1;
+            Console.Error.WriteLine($"Error processing path: {ex.Message}");
+            Console.Error.WriteLine(ex.ToString());
+            return 1;
         }
     }
 
@@ -54,7 +77,7 @@ public static class Program
         // Only process .cs files
         if (!filePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
         {
-            return 0;
+            return 1;
         }
 
         try
@@ -62,34 +85,36 @@ public static class Program
             string fileContent = File.ReadAllText(filePath);
             string organizedContent = OrganizerService.OrganizeFile(fileContent);
 
-            // Write the organized content back to the file
-            //File.WriteAllText(filePath, organizedContent);
+            File.WriteAllText(filePath, organizedContent, Encoding.UTF8);
 
-            Console.WriteLine($"{filePath}:");
-            Console.WriteLine(organizedContent);
+            // WriteLine("====================");
+            //WriteLine($"{filePath}:");
+            // WriteLine("---");
+            //WriteLine(organizedContent);
+            // WriteLine("---");
 
-            Console.WriteLine($"✓ Organized: {filePath}");
+            //Write("✓", ConsoleColor.Green);
+            //WriteLine($" {filePath}");
 
             return 0;
         }
         catch (Exception ex)
         {
-            throw;
-            //Console.Error.WriteLine($"Error processing file '{filePath}': {ex.Message}");
-            //return 1;
+            Console.Error.WriteLine($"Error processing file '{filePath}': {ex.Message}");
+            Console.Error.WriteLine(ex.ToString());
+            return 1;
         }
     }
 
     private static int ProcessDirectory(string directoryPath)
     {
-        Console.WriteLine($"Processing directory: {directoryPath}");
+        WriteLine($"Processing directory: {directoryPath}");
 
-        // Get all .cs files in the directory and subdirectories
         string[] csFiles = Directory.GetFiles(directoryPath, "*.cs", SearchOption.AllDirectories);
 
         if (csFiles.Length == 0)
         {
-            Console.WriteLine("No C# files found in the specified directory.");
+            WriteLine("No C# files found in the specified directory.");
             return 0;
         }
 
@@ -98,14 +123,70 @@ public static class Program
 
         foreach (string filePath in csFiles)
         {
-            ProcessFile(filePath);
+            int ret = ProcessFile(filePath);
+            if (ret == 0)
+                successCount++;
+            else
+                errorCount++;
         }
 
-        Console.WriteLine();
-        Console.WriteLine(
-            $"Processing complete: {successCount} files organized, {errorCount} errors."
-        );
+        WriteLine();
+        WriteLine($"Processing complete: {successCount} files organized, {errorCount} errors.");
 
         return errorCount > 0 ? 1 : 0;
+    }
+
+    private static void Write(string content)
+    {
+        Write(content, foregroundColor: null, backgroundColor: null);
+    }
+
+    private static void Write(string content, ConsoleColor? foregroundColor)
+    {
+        Write(content, foregroundColor: foregroundColor, backgroundColor: null);
+    }
+
+    private static void WriteLine(string? content = null)
+    {
+        WriteLine(content, foregroundColor: null, backgroundColor: null);
+    }
+
+    private static void WriteLine(string? content, ConsoleColor? foregroundColor)
+    {
+        WriteLine(content, foregroundColor: foregroundColor, backgroundColor: null);
+    }
+
+    private static void Write(
+        string? content,
+        ConsoleColor? foregroundColor,
+        ConsoleColor? backgroundColor
+    )
+    {
+        if (foregroundColor != null)
+            Console.ForegroundColor = foregroundColor.Value;
+        if (backgroundColor != null)
+            Console.BackgroundColor = backgroundColor.Value;
+
+        Console.Write(content);
+
+        if (foregroundColor != null || backgroundColor != null)
+            Console.ResetColor();
+    }
+
+    private static void WriteLine(
+        string? content,
+        ConsoleColor? foregroundColor,
+        ConsoleColor? backgroundColor
+    )
+    {
+        if (foregroundColor != null)
+            Console.ForegroundColor = foregroundColor.Value;
+        if (backgroundColor != null)
+            Console.BackgroundColor = backgroundColor.Value;
+
+        Console.WriteLine(content);
+
+        if (foregroundColor != null || backgroundColor != null)
+            Console.ResetColor();
     }
 }

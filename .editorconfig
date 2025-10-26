@@ -141,7 +141,7 @@ csharp_style_expression_bodied_properties = true:warning
 csharp_style_expression_bodied_indexers = true:warning
 csharp_style_expression_bodied_accessors = true:warning
 csharp_style_expression_bodied_lambdas = true:warning
-csharp_style_expression_bodied_local_functions = true:warning
+csharp_style_expression_bodied_local_functions = true:none
 # Pattern matching preferences
 csharp_style_pattern_matching_over_is_with_cast_check = true:warning
 csharp_style_pattern_matching_over_as_with_null_check = true:warning
@@ -618,3 +618,5 @@ dotnet_diagnostic.SA1518.severity = none
 # IDE0305: Simplify collection initialization
 dotnet_diagnostic.IDE0305.severity = none
 
+# IDE0061: Use expression body for local function
+dotnet_diagnostic.IDE0061.severity = none

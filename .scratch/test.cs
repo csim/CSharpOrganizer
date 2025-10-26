@@ -13,12 +13,17 @@ public enum Enum1
     Value2,
 }
 
+
+
 public class Class2
 {
     // this is a test of a comment
     // this is a test of a comment
     public void Method2() { }
 
+    /// <summary>
+    /// method1
+    /// </summary>
     public void Method1() { }
 
     public bool Text1 => _test1; // test comment
@@ -52,7 +57,8 @@ public class Class1
 
     public void Method2()
     {
-        var x = 1;
+        // test comment 1
+        var x = 1; // test comment 2
 
         return x;
     }

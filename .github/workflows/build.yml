@@ -1,0 +1,92 @@
+name: Build and Publish
+
+on:
+  push:
+    branches: [main, develop]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+env:
+  DOTNET_VERSION: "8.0.x"
+  BUILD_CONFIG: "Release"
+  SOLUTION: "src/CSharpOrganizer.slnx"
+  PROJECT: "src/CSharpOrganizer/CSharpOrganizer.csproj"
+  PREVIEW_VERSION: "2.0.0"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Extract version from tag or branch
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            # Extract version from tag (e.g., v1.1.0 -> 1.1.0)
+            VERSION="${{ github.ref_name }}"
+            VERSION="${VERSION#v}"
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "suffix=" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            # Main branch gets a preview version
+            VERSION="${{ env.PREVIEW_VERSION }}"
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "suffix=-preview-${{ github.run_number }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            # Develop branch gets a dev version
+            VERSION="${{ env.PREVIEW_VERSION }}"
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "suffix=-dev-${{ github.run_number }}" >> $GITHUB_OUTPUT
+          else
+            # Other branches get a branch-specific version
+            VERSION="${{ env.PREVIEW_VERSION }}"
+            BRANCH_NAME="${{ github.ref_name }}"
+            SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/[^a-zA-Z0-9]/-/g')
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "suffix=-$SAFE_BRANCH_NAME-${{ github.run_number }}" >> $GITHUB_OUTPUT
+          fi
+          echo "Full version will be: ${VERSION}${suffix}"
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.SOLUTION }}
+
+      - name: Build solution
+        run: |
+          dotnet build ${{ env.SOLUTION }} \
+            --configuration ${{ env.BUILD_CONFIG }} \
+            --no-restore \
+            -p:Version=${{ steps.version.outputs.version }}${{ steps.version.outputs.suffix }} \
+            -p:AssemblyVersion=${{ steps.version.outputs.version }} \
+            -p:FileVersion=${{ steps.version.outputs.version }} \
+            -p:PackageVersion=${{ steps.version.outputs.version }}${{ steps.version.outputs.suffix }}
+
+      - name: Run tests
+        run: dotnet test ${{ env.SOLUTION }} --configuration ${{ env.BUILD_CONFIG }} --no-build --verbosity normal
+
+      - name: Create NuGet package
+        if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main')
+        run: |
+          dotnet pack ${{ env.PROJECT }} --configuration ${{ env.BUILD_CONFIG }} --no-build --output ./artifacts \
+            -p:Version=${{ steps.version.outputs.version }}${{ steps.version.outputs.suffix }}
+
+      - name: Publish to NuGet
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        run: dotnet nuget push ./artifacts/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
+
+      - name: Upload build artifacts
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: ./artifacts/*.nupkg

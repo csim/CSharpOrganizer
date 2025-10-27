@@ -67,9 +67,9 @@ public static class Program
             if (ret == 0)
             {
                 string duration =
-                    watch.ElapsedMilliseconds < 1_000 ? $"{watch.ElapsedMilliseconds:N0}"
+                    watch.ElapsedMilliseconds < 1_000 ? $"{watch.ElapsedMilliseconds:N0}ms"
                     : watch.Elapsed.TotalSeconds < 60 ? $"{watch.Elapsed.TotalSeconds:N1}s"
-                    : $"{watch.Elapsed.TotalSeconds / 60d:N0}m";
+                    : $"{watch.Elapsed.TotalSeconds / 60d:N1} minutes";
 
                 WriteLine($"organized {_successCount:N0} files, {duration}");
 
@@ -101,10 +101,6 @@ public static class Program
         foreach (FileInfo file in files)
         {
             int ret = Process(file);
-            if (ret == 0)
-                _successCount++;
-            else
-                _errorCount++;
         }
 
         return _errorCount > 0 ? 1 : 0;
@@ -139,10 +135,14 @@ public static class Program
                 // WriteLine($" {filePath}");
             }
 
+            _successCount++;
+
             return 0;
         }
         catch (Exception ex)
         {
+            _errorCount++;
+
             Console.Error.WriteLine($"Error processing file: {file}");
             Console.Error.WriteLine(ex.ToString());
             return 1;

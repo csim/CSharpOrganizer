@@ -6,8 +6,11 @@ namespace CSharpOrganizer;
 
 public static class Program
 {
+    private static bool _debug;
+
     public static int Main(string[] args)
     {
+        _debug = args.Contains("--debug");
         //args = [@"C:\src\koalas\src\Koalas\Text\TextFieldSetItemBuilder.cs"];
         //args = [@"C:\src\koalas\src\Koalas\Text\"];
         //args = [@"C:\prose_wip\tformula\Transformation.Formula\"];
@@ -90,16 +93,22 @@ public static class Program
             string fileContent = File.ReadAllText(filePath);
             string organizedContent = OrganizerService.OrganizeFile(fileContent);
 
-            File.WriteAllText(filePath, organizedContent, Encoding.UTF8);
+            if (!_debug)
+            {
+                File.WriteAllText(filePath, organizedContent, Encoding.UTF8);
+            }
 
-            // WriteLine("====================");
-            // WriteLine($"{filePath}:");
-            // WriteLine("---");
-            // WriteLine(organizedContent);
-            // WriteLine("---");
+            if (_debug)
+            {
+                WriteLine("====================");
+                WriteLine($"{filePath}:");
+                WriteLine("---");
+                WriteLine(organizedContent);
+                WriteLine("---");
 
-            // Write("✓", ConsoleColor.Green);
-            // WriteLine($" {filePath}");
+                // Write("✓", ConsoleColor.Green);
+                // WriteLine($" {filePath}");
+            }
 
             return 0;
         }

@@ -76,14 +76,21 @@ jobs:
         run: dotnet test ${{ env.SOLUTION }} --configuration ${{ env.BUILD_CONFIG }} --no-build --verbosity normal
 
       - name: Create NuGet package
-        if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main')
+        if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/v'))
         run: |
-          dotnet pack ${{ env.PROJECT }} --configuration ${{ env.BUILD_CONFIG }} --no-build --output ${{ env.ARTIFACTS_DIR }} \
+          dotnet pack ${{ env.PROJECT }} \
+            --configuration ${{ env.BUILD_CONFIG }} \
+            --no-build \
+            --output ${{ env.ARTIFACTS_DIR }} \
             -p:Version=${{ steps.version.outputs.version }}${{ steps.version.outputs.suffix }}
 
       - name: Publish to NuGet
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-        run: dotnet nuget push ${{ env.ARTIFACTS_DIR }}/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
+        run: |
+          dotnet nuget push ${{ env.ARTIFACTS_DIR }}/*.nupkg \
+            --source https://api.nuget.org/v3/index.json \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --skip-duplicate
 
       - name: Upload build artifacts
         if: github.event_name == 'push'

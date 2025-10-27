@@ -32,35 +32,6 @@ public static partial class OrganizeService
         return 3;
     }
 
-    private static bool IsInsideRegion(SyntaxNode node)
-    {
-        SyntaxNode root = node.SyntaxTree.GetRoot();
-        int nodePosition = node.SpanStart;
-
-        IEnumerable<SyntaxTrivia> allTrivia = root.DescendantTrivia(descendIntoTrivia: true);
-
-        Stack<SyntaxTrivia> regionStack = new();
-
-        foreach (SyntaxTrivia trivia in allTrivia)
-        {
-            // Stop when we reach our node's position
-            if (trivia.SpanStart >= nodePosition)
-                break;
-
-            if (trivia.IsKind(SyntaxKind.RegionDirectiveTrivia))
-            {
-                regionStack.Push(trivia);
-            }
-            else if (trivia.IsKind(SyntaxKind.EndRegionDirectiveTrivia))
-            {
-                if (regionStack.Count > 0)
-                    regionStack.Pop();
-            }
-        }
-
-        return regionStack.Count > 0;
-    }
-
     private static CompilationUnitSyntax Organize(CompilationUnitSyntax source)
     {
         source = source.RemoveRegions().WithMembers(OrganizeMembers(source.Members));

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
     <UseArtifactsOutput>true</UseArtifactsOutput>
-    <ArtifactsPath>$([MSBuild]::NormalizePath($(MSBuildThisFileDirectory), 'artifacts'))</ArtifactsPath>
+    <ArtifactsPath>$([MSBuild]::NormalizePath($(MSBuildThisFileDirectory), '..', 'artifacts'))</ArtifactsPath>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <Nullable>enable</Nullable>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>

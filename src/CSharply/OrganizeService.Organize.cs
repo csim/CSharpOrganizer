@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
+using Koalas.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -35,53 +36,133 @@ public partial class OrganizeService
     {
         subject = subject.RemoveRegions().WithMembers(OrganizeMembers(subject.Members));
 
-        return NormalizeBlankLines(subject);
+        return subject.WithoutBlankLineTrivia();
     }
 
     private static BaseNamespaceDeclarationSyntax Organize(BaseNamespaceDeclarationSyntax subject)
     {
-        subject = subject.WithMembers(OrganizeMembers(subject.Members)).RemoveRegions();
+        subject = subject.WithMembers(OrganizeMembers(subject.Members));
+        subject = subject.RemoveRegions();
 
-        return NormalizeBlankLines(subject);
+        List<MemberDeclarationSyntax> members = subject.Members.ToList();
+
+        if (subject.Usings.Count > 0)
+        {
+            subject = subject
+                .WithUsings(Organize(subject.Usings))
+                .ReplaceUsing(0, m => m.WithOneLeadingBlankLine());
+        }
+
+        subject = subject.WithMembers(members);
+
+        if (subject is NamespaceDeclarationSyntax && members.Count > 0)
+        {
+            subject = subject.ReplaceMember(0, m => m.WithoutLeadingBlankLines());
+        }
+
+        return subject.WithOneLeadingBlankLine().WithoutTrailingBlankLines();
+    }
+
+    private static SyntaxList<UsingDirectiveSyntax> Organize(
+        SyntaxList<UsingDirectiveSyntax> subjectUsings
+    )
+    {
+        if (subjectUsings.Count == 0)
+        {
+            return subjectUsings;
+        }
+
+        List<UsingDirectiveSyntax> usings = subjectUsings
+            .OrderBy(u =>
+                u.Name?.ToString().StartsWith("System", StringComparison.OrdinalIgnoreCase) == true
+                    ? 0
+                    : 1
+            )
+            .ThenBy(u => u.Name?.ToString() ?? string.Empty)
+            .ToList();
+
+        for (int i = 0; i < subjectUsings.Count; i++)
+        {
+            usings[i] = usings[i].WithoutBlankLineTrivia();
+        }
+
+        usings[0] = usings[0].WithOneLeadingBlankLine();
+
+        return new SyntaxList<UsingDirectiveSyntax>(usings);
     }
 
     private static InterfaceDeclarationSyntax Organize(InterfaceDeclarationSyntax subject)
     {
         subject = subject.WithMembers(OrganizeMembers(subject.Members)).RemoveRegions();
 
-        return NormalizeBlankLines(subject);
+        if (subject.Members.Count > 0)
+        {
+            subject = subject.ReplaceMember(0, m => m.WithoutLeadingBlankLines());
+        }
+
+        return subject.WithOneLeadingBlankLine().WithoutTrailingBlankLines();
     }
 
     private static FieldDeclarationSyntax Organize(FieldDeclarationSyntax subject)
     {
-        return NormalizeBlankLines(subject);
+        return subject.WithoutBlankLineTrivia();
     }
 
     private static PropertyDeclarationSyntax Organize(PropertyDeclarationSyntax subject)
     {
-        return NormalizeBlankLines(subject);
+        return subject.WithOneLeadingBlankLine().WithoutTrailingBlankLines();
     }
 
     private static ConstructorDeclarationSyntax Organize(ConstructorDeclarationSyntax subject)
     {
-        return NormalizeBlankLines(subject);
+        return subject.WithOneLeadingBlankLine().WithoutTrailingBlankLines();
     }
 
     private static MethodDeclarationSyntax Organize(MethodDeclarationSyntax subject)
     {
-        return NormalizeBlankLines(subject);
+        return subject.WithOneLeadingBlankLine().WithoutTrailingBlankLines();
     }
 
     private static ClassDeclarationSyntax Organize(ClassDeclarationSyntax subject)
     {
         subject = subject.RemoveRegions().WithMembers(OrganizeMembers(subject.Members));
 
-        return NormalizeBlankLines(subject);
+        bool allLeadingWhitespace = subject.OpenBraceToken.TrailingTrivia.All(i =>
+            i.IsKind(SyntaxKind.WhitespaceTrivia) || i.IsKind(SyntaxKind.EndOfLineTrivia)
+        );
+        if (allLeadingWhitespace)
+        {
+            subject = subject.WithOpenBraceToken(
+                subject.OpenBraceToken.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed)
+            );
+        }
+
+        allLeadingWhitespace = subject.CloseBraceToken.LeadingTrivia.All(i =>
+            i.IsKind(SyntaxKind.WhitespaceTrivia) || i.IsKind(SyntaxKind.EndOfLineTrivia)
+        );
+
+        if (allLeadingWhitespace)
+        {
+            IEnumerable<SyntaxTrivia> indentationTrivia =
+                subject.CloseBraceToken.LeadingTrivia.Where(i =>
+                    i.IsKind(SyntaxKind.WhitespaceTrivia)
+                );
+            subject = subject.WithCloseBraceToken(
+                subject.CloseBraceToken.WithLeadingTrivia(indentationTrivia)
+            );
+        }
+
+        if (subject.Members.Count > 0)
+        {
+            subject = subject.ReplaceMember(0, m => m.WithoutLeadingBlankLines());
+        }
+
+        return subject.WithOneLeadingBlankLine().WithoutTrailingBlankLines();
     }
 
     private static EnumDeclarationSyntax Organize(EnumDeclarationSyntax subject)
     {
-        return NormalizeBlankLines(subject);
+        return subject.WithOneLeadingBlankLine().WithoutTrailingBlankLines();
     }
 
     private static SyntaxList<MemberDeclarationSyntax> OrganizeMembers(

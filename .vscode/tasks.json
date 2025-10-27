@@ -96,17 +96,37 @@
       }
     },
     // ------- RUN ctrl+shift+q -----------------------------
+    // {
+    //   "label": "run",
+    //   "command": "dotnet",
+    //   "type": "process",
+    //   "args": [
+    //     "run",
+    //     "--debug"
+    //   ],
+    //   "options": {
+    //     "saveBeforeRun": "allFiles",
+    //     "cwd": "${workspaceFolder}/src/CSharply"
+    //   },
+    //   "problemMatcher": "$msCompile",
+    //   "group": {
+    //     "kind": "test",
+    //     "isDefault": true
+    //   },
+    //   "presentation": {
+    //     "clear": true
+    //   }
+    // },
     {
       "label": "run",
       "command": "dotnet",
       "type": "process",
       "args": [
-        "run",
-        "--debug"
+        "test",
       ],
       "options": {
         "saveBeforeRun": "allFiles",
-        "cwd": "${workspaceFolder}/src/CSharply"
+        "cwd": "${workspaceFolder}/src/CSharply.Tests"
       },
       "problemMatcher": "$msCompile",
       "group": {
@@ -117,6 +137,7 @@
         "clear": true
       }
     },
+    // --------------------------------------------
     {
       "label": "test-watch",
       "command": "dotnet",

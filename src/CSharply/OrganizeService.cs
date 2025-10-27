@@ -15,6 +15,9 @@ public partial class OrganizeService(Options options)
     private readonly object _lock = new();
     private int _successCount;
 
+    public OrganizeService()
+        : this(new Options(Verbose: false, Debug: false)) { }
+
     public OrganizeResult Process(string path)
     {
         Stopwatch watch = Stopwatch.StartNew();

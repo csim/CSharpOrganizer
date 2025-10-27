@@ -46,10 +46,10 @@ public static class Program
             TimeSpan duration = result.Duration;
 
             string successPlural = result.SuccessCount == 1 ? string.Empty : "s";
-            string successContent = $"organized {result.SuccessCount:N0} file{successPlural},";
+            string successContent = $"organized {result.SuccessCount:N0} file{successPlural}";
 
             string failPlural = result.FailCount == 1 ? string.Empty : "s";
-            string failContent = $"{result.FailCount:N0} failure{failPlural},";
+            string failContent = $",{result.FailCount:N0} failure{failPlural},";
 
             string durationContent =
                 duration.TotalMilliseconds < 1_000 ? $"{duration.TotalMilliseconds:N0}ms"
@@ -63,7 +63,7 @@ public static class Program
                 Write(failContent, foregroundColor: ConsoleColor.Red);
             }
 
-            WriteLine($" {durationContent}");
+            WriteLine($"  {durationContent}");
 
             return 0;
         }

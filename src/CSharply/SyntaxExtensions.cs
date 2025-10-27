@@ -2,7 +2,7 @@
 
 namespace CSharply;
 
-public static class Extensions
+public static class SyntaxExtensions
 {
     private static readonly SyntaxTrivia _lineEnding = SyntaxFactory.CarriageReturnLineFeed;
 

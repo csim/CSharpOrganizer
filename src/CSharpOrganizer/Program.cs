@@ -145,6 +145,7 @@ public static class Program
 
             Console.Error.WriteLine($"Error processing file: {file}");
             Console.Error.WriteLine(ex.ToString());
+
             return 1;
         }
     }

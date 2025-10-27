@@ -15,7 +15,7 @@ public static partial class OrganizeService
         CompilationUnitSyntax root = (CompilationUnitSyntax)tree.GetRoot();
         root = Organize(root);
 
-        return root.WithOneTrailingBlankLine().ToFullString().Trim() + "\r\n" + "\r\n";
+        return root.WithOneTrailingBlankLine().ToFullString().Trim() + "\r\n";
     }
 
     private static int AccessModifierPriority(SyntaxTokenList modifiers)
@@ -142,4 +142,3 @@ public static partial class OrganizeService
         );
     }
 }
-

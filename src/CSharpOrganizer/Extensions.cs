@@ -223,4 +223,3 @@ public static class Extensions
         return source.WithTrailingTrivia(new SyntaxTriviaList(cleanedTrivia));
     }
 }
-

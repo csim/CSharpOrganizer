@@ -7,6 +7,8 @@ namespace CSharpOrganizer;
 public static class Program
 {
     private static bool _debug;
+    private static int _errorCount;
+    private static int _successCount;
 
     public static int Main(string[] args)
     {
@@ -49,89 +51,86 @@ public static class Program
             Stopwatch watch = Stopwatch.StartNew();
             int ret = 0;
 
-            if (Directory.Exists(path))
+            DirectoryInfo directory = new(path);
+
+            if (directory.Exists)
             {
-                ret = ProcessDirectory(path);
+                ret = Process(directory);
             }
 
-            if (File.Exists(path))
+            FileInfo file = new(path);
+            if (file.Exists)
             {
-                ret = ProcessFile(path);
+                ret = Process(file);
             }
 
             if (ret == 0)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                WriteLine($"{watch.ElapsedMilliseconds:N0}ms");
-                Console.ResetColor();
+                string duration =
+                    watch.ElapsedMilliseconds < 1_000 ? $"{watch.ElapsedMilliseconds:N0}"
+                    : watch.Elapsed.TotalSeconds < 60 ? $"{watch.Elapsed.TotalSeconds:N1}s"
+                    : $"{watch.Elapsed.TotalSeconds / 60d:N0}m";
+
+                WriteLine($"organized {_successCount:N0} files, {duration}");
 
                 return 0;
             }
 
-            Console.Error.WriteLine($"Error: Path '{path}' not found.");
+            WriteLine($"NotFound: '{path}'", ConsoleColor.Red);
 
             return ret;
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error processing path: {ex.Message}");
+            //Console.Error.WriteLine($"Error processing path: {ex.Message}");
             Console.Error.WriteLine(ex.ToString());
             return 1;
         }
     }
 
-    private static int ProcessDirectory(string directoryPath)
+    private static int Process(DirectoryInfo directory)
     {
-        WriteLine($"Processing directory: {directoryPath}");
+        FileInfo[] files = directory.EnumerateFiles("*.cs", SearchOption.AllDirectories).ToArray();
 
-        string[] csFiles = Directory.GetFiles(directoryPath, "*.cs", SearchOption.AllDirectories);
-
-        if (csFiles.Length == 0)
+        if (files.Length == 0)
         {
             WriteLine("No C# files found in the specified directory.");
             return 0;
         }
 
-        int successCount = 0;
-        int errorCount = 0;
-
-        foreach (string filePath in csFiles)
+        foreach (FileInfo file in files)
         {
-            int ret = ProcessFile(filePath);
+            int ret = Process(file);
             if (ret == 0)
-                successCount++;
+                _successCount++;
             else
-                errorCount++;
+                _errorCount++;
         }
 
-        WriteLine();
-        WriteLine($"Processing complete: {successCount} files organized, {errorCount} errors.");
-
-        return errorCount > 0 ? 1 : 0;
+        return _errorCount > 0 ? 1 : 0;
     }
 
-    private static int ProcessFile(string filePath)
+    private static int Process(FileInfo file)
     {
-        // Only process .cs files
-        if (!filePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+        if (!file.Extension.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
         {
             return 1;
         }
 
         try
         {
-            string fileContent = File.ReadAllText(filePath);
+            string fileContent = File.ReadAllText(file.FullName);
             string organizedContent = OrganizeService.OrganizeFile(fileContent);
 
             if (!_debug)
             {
-                File.WriteAllText(filePath, organizedContent, Encoding.UTF8);
+                File.WriteAllText(file.FullName, organizedContent, Encoding.UTF8);
             }
 
             if (_debug)
             {
                 WriteLine("====================");
-                WriteLine($"{filePath}:");
+                WriteLine($"{file}:");
                 WriteLine("---");
                 WriteLine(organizedContent);
                 WriteLine("---");
@@ -144,38 +143,38 @@ public static class Program
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error processing file '{filePath}': {ex.Message}");
+            Console.Error.WriteLine($"Error processing file: {file}");
             Console.Error.WriteLine(ex.ToString());
             return 1;
         }
     }
 
-    private static void Write(string content)
-    {
-        Write(content, foregroundColor: null, backgroundColor: null);
-    }
+    // private static void Write(string content)
+    // {
+    //     Write(content, foregroundColor: null, backgroundColor: null);
+    // }
 
-    private static void Write(string content, ConsoleColor? foregroundColor)
-    {
-        Write(content, foregroundColor: foregroundColor, backgroundColor: null);
-    }
+    // private static void Write(string content, ConsoleColor? foregroundColor)
+    // {
+    //     Write(content, foregroundColor: foregroundColor, backgroundColor: null);
+    // }
 
-    private static void Write(
-        string? content,
-        ConsoleColor? foregroundColor,
-        ConsoleColor? backgroundColor
-    )
-    {
-        if (foregroundColor != null)
-            Console.ForegroundColor = foregroundColor.Value;
-        if (backgroundColor != null)
-            Console.BackgroundColor = backgroundColor.Value;
+    // private static void Write(
+    //     string? content,
+    //     ConsoleColor? foregroundColor,
+    //     ConsoleColor? backgroundColor
+    // )
+    // {
+    //     if (foregroundColor != null)
+    //         Console.ForegroundColor = foregroundColor.Value;
+    //     if (backgroundColor != null)
+    //         Console.BackgroundColor = backgroundColor.Value;
 
-        Console.Write(content);
+    //     Console.Write(content);
 
-        if (foregroundColor != null || backgroundColor != null)
-            Console.ResetColor();
-    }
+    //     if (foregroundColor != null || backgroundColor != null)
+    //         Console.ResetColor();
+    // }
 
     private static void WriteLine(string? content = null)
     {

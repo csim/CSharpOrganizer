@@ -500,6 +500,10 @@ public class OrganizeServiceTests(ITestOutputHelper output, bool debug = false)
             expectedLines = expectedCode.Lines().ToReadOnlyList();
             actualLines = actualCode.Lines().ToReadOnlyList();
 
+            // Normalize line endings for comparison - convert both to Unix-style line endings
+            actualCode = actualCode.Replace("\r\n", "\n");
+            expectedCode = expectedCode.Replace("\r\n", "\n");
+
             actualCode.Should().Be(expectedCode);
             success = true;
         }

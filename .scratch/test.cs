@@ -1,53 +1,49 @@
-﻿using Newtonsoft;
-using System.Reflection.Metadata;
-using System;
+﻿using System;
 using System.Data;
+using System.Reflection.Metadata;
+using Newtonsoft;
+
 namespace TestNamespace;
 
+public interface IInterface2 { }
 
-
-
-public enum Enum1
-{
-    Value1,
-    Value2,
-}
-
-
+public interface IInterface1 { }
 
 public class Class2
 {
-    // this is a test of a comment
-    // this is a test of a comment
-    public void Method2() { }
-
-    /// <summary>
-    /// method1
-    /// </summary>
-    public void Method1() { }
+    public bool _test1 = true;
+    private bool _test2 = true;
+    private bool _test3 = true;
 
     public bool Text1 => _test1; // test comment
-    protected bool Text3 => _test;
+
     public string Text2 { get; set; }
 
-    public Class1(string text1)
-    {
-        _test1 = false;
-    }
+    protected bool Text3 => _test;
 
     public Class1()
     {
         _test1 = false;
     }
 
+    public Class1(string text1)
+    {
+        _test1 = false;
+    }
+
+    /// <summary>
+    /// method1
+    /// </summary>
+    public void Method1() { }
+
+    // this is a test of a comment
+    // this is a test of a comment
+    public void Method2() { }
+
     public class SubClass1
     {
 
     }
-
-    private bool _test2 = true;
-    private bool _test3 = true;
-    public bool _test1 = true;
 
 
 
@@ -55,9 +51,14 @@ public class Class2
 
 public class Class1
 {
-    private void Private1() { }
+    private bool _test1 = true;
 
-    private void Method4() { }
+    public Class1()
+    {
+        _test1 = false;
+    }
+
+    public void Method1() { }
 
     public void Method2()
     {
@@ -67,16 +68,13 @@ public class Class1
         return x;
     }
 
-    public void Method1() { }
+    private void Method4() { }
 
-    private bool _test1 = true;
-
-    public Class1()
-    {
-        _test1 = false;
-    }
+    private void Private1() { }
 }
 
-public interface IInterface2 { }
-
-public interface IInterface1 { }
+public enum Enum1
+{
+    Value1,
+    Value2,
+}

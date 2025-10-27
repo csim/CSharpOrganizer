@@ -3,13 +3,7 @@ namespace Text.Namespace1; // namespace comment
 
 public class Class1
 {
-    #region test1
-
-    public bool Region1 => true;
     public bool _region1 = true;
-
-    #endregion
-
 
     ///<summary>
     /// test1 summary
@@ -17,4 +11,6 @@ public class Class1
     public bool _test1 = true;
     private bool _test2 = true;
     private bool _test3 = true; // test3 comment
+
+    public bool Region1 => true;
 }

@@ -32,32 +32,57 @@ public static partial class OrganizeService
         return 3;
     }
 
-    private static CompilationUnitSyntax Organize(CompilationUnitSyntax source)
+    private static CompilationUnitSyntax Organize(CompilationUnitSyntax subject)
     {
-        source = source.RemoveRegions().WithMembers(OrganizeMembers(source.Members));
+        subject = subject.RemoveRegions().WithMembers(OrganizeMembers(subject.Members));
 
-        return NormalizeBlankLines(source);
+        return NormalizeBlankLines(subject);
     }
 
-    private static BaseNamespaceDeclarationSyntax Organize(BaseNamespaceDeclarationSyntax source)
+    private static BaseNamespaceDeclarationSyntax Organize(BaseNamespaceDeclarationSyntax subject)
     {
-        source = source.WithMembers(OrganizeMembers(source.Members)).RemoveRegions();
+        subject = subject.WithMembers(OrganizeMembers(subject.Members)).RemoveRegions();
 
-        return NormalizeBlankLines(source);
+        return NormalizeBlankLines(subject);
     }
 
-    private static ClassDeclarationSyntax Organize(ClassDeclarationSyntax source)
+    private static InterfaceDeclarationSyntax Organize(InterfaceDeclarationSyntax subject)
     {
-        source = source.RemoveRegions().WithMembers(OrganizeMembers(source.Members));
+        subject = subject.WithMembers(OrganizeMembers(subject.Members)).RemoveRegions();
 
-        return NormalizeBlankLines(source);
+        return NormalizeBlankLines(subject);
     }
 
-    private static InterfaceDeclarationSyntax Organize(InterfaceDeclarationSyntax source)
+    private static FieldDeclarationSyntax Organize(FieldDeclarationSyntax subject)
     {
-        source = source.WithMembers(OrganizeMembers(source.Members)).RemoveRegions();
+        return NormalizeBlankLines(subject);
+    }
 
-        return NormalizeBlankLines(source);
+    private static PropertyDeclarationSyntax Organize(PropertyDeclarationSyntax subject)
+    {
+        return NormalizeBlankLines(subject);
+    }
+
+    private static ConstructorDeclarationSyntax Organize(ConstructorDeclarationSyntax subject)
+    {
+        return NormalizeBlankLines(subject);
+    }
+
+    private static MethodDeclarationSyntax Organize(MethodDeclarationSyntax subject)
+    {
+        return NormalizeBlankLines(subject);
+    }
+
+    private static ClassDeclarationSyntax Organize(ClassDeclarationSyntax subject)
+    {
+        subject = subject.RemoveRegions().WithMembers(OrganizeMembers(subject.Members));
+
+        return NormalizeBlankLines(subject);
+    }
+
+    private static EnumDeclarationSyntax Organize(EnumDeclarationSyntax subject)
+    {
+        return NormalizeBlankLines(subject);
     }
 
     private static SyntaxList<MemberDeclarationSyntax> OrganizeMembers(
@@ -79,24 +104,28 @@ public static partial class OrganizeService
         // Separate members by type
         List<FieldDeclarationSyntax> fields = members
             .OfType<FieldDeclarationSyntax>()
+            .Select(Organize)
             .OrderBy(f => AccessModifierPriority(f.Modifiers))
             .ThenBy(f => f.Declaration.Variables.First().Identifier.Text)
             .ToList();
 
         List<PropertyDeclarationSyntax> properties = members
             .OfType<PropertyDeclarationSyntax>()
+            .Select(Organize)
             .OrderBy(f => AccessModifierPriority(f.Modifiers))
             .ThenBy(p => p.Identifier.Text)
             .ToList();
 
         List<ConstructorDeclarationSyntax> constructors = members
             .OfType<ConstructorDeclarationSyntax>()
+            .Select(Organize)
             .OrderBy(f => AccessModifierPriority(f.Modifiers))
             .ThenBy(c => c.ParameterList.Parameters.Count)
             .ToList();
 
         List<MethodDeclarationSyntax> methods = members
             .OfType<MethodDeclarationSyntax>()
+            .Select(Organize)
             .OrderBy(m => AccessModifierPriority(m.Modifiers))
             .ThenBy(m => m.Identifier.Text)
             .ThenBy(m => m.TypeParameterList?.Parameters.Count ?? 0)
@@ -118,14 +147,15 @@ public static partial class OrganizeService
                         or PropertyDeclarationSyntax
                         or ConstructorDeclarationSyntax
                         or MethodDeclarationSyntax
-                        or EnumDeclarationSyntax
                         or ClassDeclarationSyntax
+                        or EnumDeclarationSyntax
                     )
             )
             .ToList();
 
         List<EnumDeclarationSyntax> enums = members
             .OfType<EnumDeclarationSyntax>()
+            .Select(Organize)
             .OrderBy(f => AccessModifierPriority(f.Modifiers))
             .ToList();
 

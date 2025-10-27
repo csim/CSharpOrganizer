@@ -46,6 +46,42 @@ public static partial class OrganizeService
         return subject.WithOneLeadingBlankLine().WithoutTrailingBlankLines();
     }
 
+    private static InterfaceDeclarationSyntax NormalizeBlankLines(
+        InterfaceDeclarationSyntax subject
+    )
+    {
+        subject = subject.WithMembers(NormalizeBlankLines(subject.Members));
+
+        if (subject.Members.Count > 0)
+        {
+            subject = subject.ReplaceMember(0, m => m.WithoutLeadingBlankLines());
+        }
+
+        return subject.WithOneLeadingBlankLine().WithoutTrailingBlankLines();
+    }
+
+    private static FieldDeclarationSyntax NormalizeBlankLines(FieldDeclarationSyntax subject)
+    {
+        return subject.WithoutBlankLineTrivia();
+    }
+
+    private static PropertyDeclarationSyntax NormalizeBlankLines(PropertyDeclarationSyntax subject)
+    {
+        return subject.WithOneLeadingBlankLine().WithoutTrailingBlankLines();
+    }
+
+    private static ConstructorDeclarationSyntax NormalizeBlankLines(
+        ConstructorDeclarationSyntax subject
+    )
+    {
+        return subject.WithOneLeadingBlankLine().WithoutTrailingBlankLines();
+    }
+
+    private static MethodDeclarationSyntax NormalizeBlankLines(MethodDeclarationSyntax subject)
+    {
+        return subject.WithOneLeadingBlankLine().WithoutTrailingBlankLines();
+    }
+
     private static ClassDeclarationSyntax NormalizeBlankLines(ClassDeclarationSyntax subject)
     {
         bool allLeadingWhitespace = subject.OpenBraceToken.TrailingTrivia.All(i =>
@@ -64,23 +100,15 @@ public static partial class OrganizeService
 
         if (allLeadingWhitespace)
         {
-            subject = subject.WithCloseBraceToken(subject.CloseBraceToken.WithLeadingTrivia());
+            IEnumerable<SyntaxTrivia> indentationTrivia =
+                subject.CloseBraceToken.LeadingTrivia.Where(i =>
+                    i.IsKind(SyntaxKind.WhitespaceTrivia)
+                );
+            subject = subject.WithCloseBraceToken(
+                subject.CloseBraceToken.WithLeadingTrivia(indentationTrivia)
+            );
         }
 
-        subject = subject.WithMembers(NormalizeBlankLines(subject.Members));
-
-        if (subject.Members.Count > 0)
-        {
-            subject = subject.ReplaceMember(0, m => m.WithoutLeadingBlankLines());
-        }
-
-        return subject.WithOneLeadingBlankLine().WithoutTrailingBlankLines();
-    }
-
-    private static InterfaceDeclarationSyntax NormalizeBlankLines(
-        InterfaceDeclarationSyntax subject
-    )
-    {
         subject = subject.WithMembers(NormalizeBlankLines(subject.Members));
 
         if (subject.Members.Count > 0)
@@ -113,27 +141,11 @@ public static partial class OrganizeService
                 ClassDeclarationSyntax item => NormalizeBlankLines(item),
                 InterfaceDeclarationSyntax item => NormalizeBlankLines(item),
                 EnumDeclarationSyntax item => NormalizeBlankLines(item),
+                PropertyDeclarationSyntax item => NormalizeBlankLines(item),
+                ConstructorDeclarationSyntax item => NormalizeBlankLines(item),
+                MethodDeclarationSyntax item => NormalizeBlankLines(item),
                 _ => members[i],
             };
-        }
-
-        for (int i = 0; i < members.Count; i++)
-        {
-            if (members[i] is FieldDeclarationSyntax f)
-            {
-                members[i] = members[i].WithoutBlankLineTrivia();
-            }
-
-            if (
-                members[i]
-                is PropertyDeclarationSyntax
-                    or ConstructorDeclarationSyntax
-                    or MethodDeclarationSyntax
-                    or EnumDeclarationSyntax
-            )
-            {
-                members[i] = members[i].WithOneLeadingBlankLine().WithoutTrailingBlankLines();
-            }
         }
 
         return new SyntaxList<MemberDeclarationSyntax>(members);

@@ -40,13 +40,9 @@ public class Class2
     // this is a test of a comment
     public void Method2() { }
 
-    public class SubClass1
+    public class SubClass1 
     {
-
     }
-
-
-
 }
 
 public class Class1

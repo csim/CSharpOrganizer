@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "organize-csharp-file",
+      "label": "csharply-file",
       "type": "process",
       "command": "csharply",
       "args": [
@@ -20,7 +20,7 @@
       "problemMatcher": []
     },
     {
-      "label": "organize-csharp-project",
+      "label": "csharply-project",
       "type": "process",
       "command": "csharply",
       "args": [
@@ -101,6 +101,7 @@
       "type": "process",
       "args": [
         "run",
+        "--debug"
       ],
       "options": {
         "saveBeforeRun": "allFiles",

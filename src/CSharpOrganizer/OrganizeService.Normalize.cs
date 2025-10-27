@@ -9,8 +9,6 @@ namespace CSharpOrganizer;
 
 public static partial class OrganizeService
 {
-    private static readonly SyntaxTrivia _lineEnding = SyntaxFactory.CarriageReturnLineFeed;
-
     private static CompilationUnitSyntax NormalizeBlankLines(CompilationUnitSyntax source)
     {
         List<MemberDeclarationSyntax> newMembers = NormalizeBlankLines(source.Members).ToList();

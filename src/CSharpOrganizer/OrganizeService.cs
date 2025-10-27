@@ -32,68 +32,99 @@ public static partial class OrganizeService
         return 3;
     }
 
+    private static bool IsInsideRegion(SyntaxNode node)
+    {
+        SyntaxNode root = node.SyntaxTree.GetRoot();
+        int nodePosition = node.SpanStart;
+
+        IEnumerable<SyntaxTrivia> allTrivia = root.DescendantTrivia(descendIntoTrivia: true);
+
+        Stack<SyntaxTrivia> regionStack = new();
+
+        foreach (SyntaxTrivia trivia in allTrivia)
+        {
+            // Stop when we reach our node's position
+            if (trivia.SpanStart >= nodePosition)
+                break;
+
+            if (trivia.IsKind(SyntaxKind.RegionDirectiveTrivia))
+            {
+                regionStack.Push(trivia);
+            }
+            else if (trivia.IsKind(SyntaxKind.EndRegionDirectiveTrivia))
+            {
+                if (regionStack.Count > 0)
+                    regionStack.Pop();
+            }
+        }
+
+        return regionStack.Count > 0;
+    }
+
     private static CompilationUnitSyntax Organize(CompilationUnitSyntax source)
     {
-        source = source.WithMembers(OrganizeMembers(source.Members));
+        source = source.RemoveRegions().WithMembers(OrganizeMembers(source.Members));
 
         return NormalizeBlankLines(source);
     }
 
     private static BaseNamespaceDeclarationSyntax Organize(BaseNamespaceDeclarationSyntax source)
     {
-        source = source.WithMembers(OrganizeMembers(source.Members));
+        source = source.WithMembers(OrganizeMembers(source.Members)).RemoveRegions();
 
         return NormalizeBlankLines(source);
     }
 
     private static ClassDeclarationSyntax Organize(ClassDeclarationSyntax source)
     {
-        source = source.WithMembers(OrganizeMembers(source.Members));
+        source = source.RemoveRegions().WithMembers(OrganizeMembers(source.Members));
 
         return NormalizeBlankLines(source);
     }
 
     private static InterfaceDeclarationSyntax Organize(InterfaceDeclarationSyntax source)
     {
-        source = source.WithMembers(OrganizeMembers(source.Members));
+        source = source.WithMembers(OrganizeMembers(source.Members)).RemoveRegions();
 
         return NormalizeBlankLines(source);
     }
 
     private static SyntaxList<MemberDeclarationSyntax> OrganizeMembers(
-        SyntaxList<MemberDeclarationSyntax> sourceMembers
+        SyntaxList<MemberDeclarationSyntax> subjectMembers
     )
     {
-        List<BaseNamespaceDeclarationSyntax> namespaces = sourceMembers
+        List<MemberDeclarationSyntax> members = subjectMembers.ToList();
+
+        List<BaseNamespaceDeclarationSyntax> namespaces = members
             .OfType<BaseNamespaceDeclarationSyntax>()
             .Select(Organize)
             .ToList();
 
-        List<InterfaceDeclarationSyntax> interfaces = sourceMembers
+        List<InterfaceDeclarationSyntax> interfaces = members
             .OfType<InterfaceDeclarationSyntax>()
             .Select(Organize)
             .ToList();
 
         // Separate members by type
-        List<FieldDeclarationSyntax> fields = sourceMembers
+        List<FieldDeclarationSyntax> fields = members
             .OfType<FieldDeclarationSyntax>()
             .OrderBy(f => AccessModifierPriority(f.Modifiers))
             .ThenBy(f => f.Declaration.Variables.First().Identifier.Text)
             .ToList();
 
-        List<PropertyDeclarationSyntax> properties = sourceMembers
+        List<PropertyDeclarationSyntax> properties = members
             .OfType<PropertyDeclarationSyntax>()
             .OrderBy(f => AccessModifierPriority(f.Modifiers))
             .ThenBy(p => p.Identifier.Text)
             .ToList();
 
-        List<ConstructorDeclarationSyntax> constructors = sourceMembers
+        List<ConstructorDeclarationSyntax> constructors = members
             .OfType<ConstructorDeclarationSyntax>()
             .OrderBy(f => AccessModifierPriority(f.Modifiers))
             .ThenBy(c => c.ParameterList.Parameters.Count)
             .ToList();
 
-        List<MethodDeclarationSyntax> methods = sourceMembers
+        List<MethodDeclarationSyntax> methods = members
             .OfType<MethodDeclarationSyntax>()
             .OrderBy(m => AccessModifierPriority(m.Modifiers))
             .ThenBy(m => m.Identifier.Text)
@@ -101,12 +132,12 @@ public static partial class OrganizeService
             .ThenBy(m => m.ParameterList.Parameters.Count)
             .ToList();
 
-        List<ClassDeclarationSyntax> classes = sourceMembers
+        List<ClassDeclarationSyntax> classes = members
             .OfType<ClassDeclarationSyntax>()
             .Select(Organize)
             .ToList();
 
-        List<MemberDeclarationSyntax> others = sourceMembers
+        List<MemberDeclarationSyntax> others = members
             .Where(i =>
                 i
                     is not (
@@ -122,7 +153,7 @@ public static partial class OrganizeService
             )
             .ToList();
 
-        List<EnumDeclarationSyntax> enums = sourceMembers
+        List<EnumDeclarationSyntax> enums = members
             .OfType<EnumDeclarationSyntax>()
             .OrderBy(f => AccessModifierPriority(f.Modifiers))
             .ToList();
@@ -140,5 +171,49 @@ public static partial class OrganizeService
                 .. enums,
             ]
         );
+    }
+
+    private static T RemoveRegions<T>(this T node)
+        where T : SyntaxNode
+    {
+        List<SyntaxTrivia> allTrivia = node.DescendantTrivia(descendIntoTrivia: false).ToList();
+        List<SyntaxTrivia> triviaToRemove = [];
+
+        for (int i = 0; i < allTrivia.Count; i++)
+        {
+            SyntaxTrivia trivia = allTrivia[i];
+
+            if (
+                !trivia.IsKind(SyntaxKind.RegionDirectiveTrivia)
+                && !trivia.IsKind(SyntaxKind.EndRegionDirectiveTrivia)
+            )
+            {
+                continue;
+            }
+
+            // Find the start of the line (including indentation)
+            int lineStart = i;
+            while (lineStart > 0 && allTrivia[lineStart - 1].IsKind(SyntaxKind.WhitespaceTrivia))
+            {
+                lineStart--;
+            }
+
+            // Add all trivia from line start to the region directive
+            for (int j = lineStart; j <= i; j++)
+            {
+                triviaToRemove.Add(allTrivia[j]);
+            }
+
+            // Also remove the following end-of-line trivia if present
+            if (i + 1 < allTrivia.Count && allTrivia[i + 1].IsKind(SyntaxKind.EndOfLineTrivia))
+            {
+                triviaToRemove.Add(allTrivia[i + 1]);
+            }
+        }
+
+        if (!triviaToRemove.Any())
+            return node;
+
+        return node.ReplaceTrivia(triviaToRemove, (originalTrivia, rewrittenTrivia) => default);
     }
 }

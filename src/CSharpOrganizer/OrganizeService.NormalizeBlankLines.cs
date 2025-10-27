@@ -48,6 +48,25 @@ public static partial class OrganizeService
 
     private static ClassDeclarationSyntax NormalizeBlankLines(ClassDeclarationSyntax subject)
     {
+        bool allLeadingWhitespace = subject.OpenBraceToken.TrailingTrivia.All(i =>
+            i.IsKind(SyntaxKind.WhitespaceTrivia) || i.IsKind(SyntaxKind.EndOfLineTrivia)
+        );
+        if (allLeadingWhitespace)
+        {
+            subject = subject.WithOpenBraceToken(
+                subject.OpenBraceToken.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed)
+            );
+        }
+
+        allLeadingWhitespace = subject.CloseBraceToken.LeadingTrivia.All(i =>
+            i.IsKind(SyntaxKind.WhitespaceTrivia) || i.IsKind(SyntaxKind.EndOfLineTrivia)
+        );
+
+        if (allLeadingWhitespace)
+        {
+            subject = subject.WithCloseBraceToken(subject.CloseBraceToken.WithLeadingTrivia());
+        }
+
         subject = subject.WithMembers(NormalizeBlankLines(subject.Members));
 
         if (subject.Members.Count > 0)

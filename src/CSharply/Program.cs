@@ -39,31 +39,51 @@ public static class Program
 
         try
         {
-            Options options = new(Debug: debug, Verbose: verbose);
+            Options options = new(Threads: 3, Debug: debug, Verbose: verbose);
             OrganizeService service = new(options);
 
             OrganizeResult result = service.Process(args[0]);
             TimeSpan duration = result.Duration;
 
-            string successPlural = result.SuccessCount == 1 ? string.Empty : "s";
-            string successContent = $"organized {result.SuccessCount:N0} file{successPlural}";
-
-            string failPlural = result.FailCount == 1 ? string.Empty : "s";
-            string failContent = $",{result.FailCount:N0} failure{failPlural},";
-
+            string successContent = $"{result.SuccessFiles.Count:N0} organized";
+            string failContent = $"  {result.FailFiles.Count:N0} failed ";
+            string skipContent = $"  {result.SkipFiles.Count:N0} skipped";
             string durationContent =
-                duration.TotalMilliseconds < 1_000 ? $"{duration.TotalMilliseconds:N0}ms"
-                : duration.TotalSeconds < 60 ? $"{duration.TotalSeconds:N1}s"
-                : $" {duration.TotalSeconds / 60d:N1} minutes";
+                duration.TotalMilliseconds < 1_000 ? $"  {duration.TotalMilliseconds:N0}ms"
+                : duration.TotalSeconds < 60 ? $"  {duration.TotalSeconds:N1}s"
+                : $"  {duration.TotalSeconds / 60d:N1} minutes";
 
             Write(successContent, foregroundColor: ConsoleColor.Green);
 
-            if (result.FailCount > 0)
+            if (result.SkipFiles.Count > 0)
+            {
+                Write(skipContent, foregroundColor: ConsoleColor.Yellow);
+            }
+
+            if (result.FailFiles.Count > 0)
             {
                 Write(failContent, foregroundColor: ConsoleColor.Red);
             }
 
             WriteLine($"  {durationContent}");
+
+            if (options.Verbose)
+            {
+                foreach (string filePath in result.SuccessFiles)
+                {
+                    WriteLine($"organized : {filePath}", foregroundColor: ConsoleColor.Green);
+                }
+
+                foreach (string filePath in result.SkipFiles)
+                {
+                    WriteLine($"skipped   : {filePath}", foregroundColor: ConsoleColor.Yellow);
+                }
+
+                foreach (string filePath in result.FailFiles)
+                {
+                    WriteLine($"failed    : {filePath}", foregroundColor: ConsoleColor.Red);
+                }
+            }
 
             return 0;
         }
@@ -119,10 +139,10 @@ public static class Program
         WriteLine(content, foregroundColor: null, backgroundColor: null);
     }
 
-    // private static void WriteLine(string? content, ConsoleColor? foregroundColor)
-    // {
-    //     WriteLine(content, foregroundColor: foregroundColor, backgroundColor: null);
-    // }
+    private static void WriteLine(string? content, ConsoleColor? foregroundColor)
+    {
+        WriteLine(content, foregroundColor: foregroundColor, backgroundColor: null);
+    }
 
     private static void WriteLine(
         string? content,

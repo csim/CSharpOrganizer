@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
-using Koalas.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -15,7 +14,7 @@ public partial class OrganizeService
         SyntaxTree tree = CSharpSyntaxTree.ParseText(code);
         CompilationUnitSyntax root = Organize((CompilationUnitSyntax)tree.GetRoot());
 
-        return root.WithOneTrailingBlankLine().ToFullString().Trim() + "\r\n";
+        return root.WithOneTrailingBlankLine().ToFullString().Trim() + Environment.NewLine;
     }
 
     private static int AccessModifierPriority(SyntaxTokenList modifiers)
@@ -139,16 +138,6 @@ public partial class OrganizeService
     private static ClassDeclarationSyntax Organize(ClassDeclarationSyntax subject)
     {
         subject = subject.RemoveRegions().WithMembers(OrganizeMembers(subject.Members));
-
-        // bool allLeadingWhitespace = subject.OpenBraceToken.TrailingTrivia.All(i =>
-        //     i.IsKind(SyntaxKind.WhitespaceTrivia) || i.IsKind(SyntaxKind.EndOfLineTrivia)
-        // );
-        // if (allLeadingWhitespace)
-        // {
-        //     subject = subject.WithOpenBraceToken(
-        //         subject.OpenBraceToken.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed)
-        //     );
-        // }
 
         subject = subject.WithOpenBraceToken(
             subject.OpenBraceToken.WithoutTrailingBlankLineTrivia()

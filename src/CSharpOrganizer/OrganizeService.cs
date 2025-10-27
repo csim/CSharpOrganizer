@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;

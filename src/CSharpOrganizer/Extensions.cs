@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 
 namespace CSharpOrganizer;
 
@@ -122,15 +122,35 @@ public static class Extensions
         return source.WithTrailingTrivia(new SyntaxTriviaList(trailingTrivia));
     }
 
+    public static SyntaxToken WithoutBlankLineTrivia(this SyntaxToken source)
+    {
+        return source.WithoutLeadingBlankLines().WithoutTrailingBlankLines();
+    }
+
     public static TSyntax WithoutBlankLineTrivia<TSyntax>(this TSyntax source)
         where TSyntax : SyntaxNode
     {
         return source.WithoutLeadingBlankLines().WithoutTrailingBlankLines();
     }
 
-    public static SyntaxToken WithoutBlankLineTrivia(this SyntaxToken source)
+    public static SyntaxToken WithoutLeadingBlankLines(this SyntaxToken source)
     {
-        return source.WithoutLeadingBlankLines().WithoutTrailingBlankLines();
+        SyntaxTriviaList trailingTrivia = source.LeadingTrivia;
+        List<SyntaxTrivia> cleanedTrivia = [];
+
+        bool strip = true;
+        for (int i = 0; i < trailingTrivia.Count; i++)
+        {
+            if (strip && trailingTrivia[i].IsKind(SyntaxKind.EndOfLineTrivia))
+            {
+                continue;
+            }
+
+            strip = false;
+            cleanedTrivia.Add(trailingTrivia[i]);
+        }
+
+        return source.WithLeadingTrivia(new SyntaxTriviaList(cleanedTrivia));
     }
 
     public static TSyntax WithoutLeadingBlankLines<TSyntax>(this TSyntax source)
@@ -154,30 +174,9 @@ public static class Extensions
         return source.WithLeadingTrivia(new SyntaxTriviaList(cleanedTrivia));
     }
 
-    public static SyntaxToken WithoutLeadingBlankLines(this SyntaxToken source)
+    public static SyntaxToken WithoutTrailingBlankLines(this SyntaxToken source)
     {
-        SyntaxTriviaList trailingTrivia = source.LeadingTrivia;
-        List<SyntaxTrivia> cleanedTrivia = [];
-
-        bool strip = true;
-        for (int i = 0; i < trailingTrivia.Count; i++)
-        {
-            if (strip && trailingTrivia[i].IsKind(SyntaxKind.EndOfLineTrivia))
-            {
-                continue;
-            }
-
-            strip = false;
-            cleanedTrivia.Add(trailingTrivia[i]);
-        }
-
-        return source.WithLeadingTrivia(new SyntaxTriviaList(cleanedTrivia));
-    }
-
-    public static TSyntax WithoutTrailingBlankLines<TSyntax>(this TSyntax source)
-        where TSyntax : SyntaxNode
-    {
-        SyntaxTriviaList trailingTrivia = source.GetTrailingTrivia();
+        SyntaxTriviaList trailingTrivia = source.TrailingTrivia;
         List<SyntaxTrivia> cleanedTrivia = [];
 
         bool strip = true;
@@ -199,9 +198,10 @@ public static class Extensions
         return source.WithTrailingTrivia(new SyntaxTriviaList(cleanedTrivia));
     }
 
-    public static SyntaxToken WithoutTrailingBlankLines(this SyntaxToken source)
+    public static TSyntax WithoutTrailingBlankLines<TSyntax>(this TSyntax source)
+        where TSyntax : SyntaxNode
     {
-        SyntaxTriviaList trailingTrivia = source.TrailingTrivia;
+        SyntaxTriviaList trailingTrivia = source.GetTrailingTrivia();
         List<SyntaxTrivia> cleanedTrivia = [];
 
         bool strip = true;

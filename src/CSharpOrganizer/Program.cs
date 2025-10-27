@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Drawing;
 using System.Text;
 
@@ -80,6 +80,36 @@ public static class Program
         }
     }
 
+    private static int ProcessDirectory(string directoryPath)
+    {
+        WriteLine($"Processing directory: {directoryPath}");
+
+        string[] csFiles = Directory.GetFiles(directoryPath, "*.cs", SearchOption.AllDirectories);
+
+        if (csFiles.Length == 0)
+        {
+            WriteLine("No C# files found in the specified directory.");
+            return 0;
+        }
+
+        int successCount = 0;
+        int errorCount = 0;
+
+        foreach (string filePath in csFiles)
+        {
+            int ret = ProcessFile(filePath);
+            if (ret == 0)
+                successCount++;
+            else
+                errorCount++;
+        }
+
+        WriteLine();
+        WriteLine($"Processing complete: {successCount} files organized, {errorCount} errors.");
+
+        return errorCount > 0 ? 1 : 0;
+    }
+
     private static int ProcessFile(string filePath)
     {
         // Only process .cs files
@@ -120,36 +150,6 @@ public static class Program
         }
     }
 
-    private static int ProcessDirectory(string directoryPath)
-    {
-        WriteLine($"Processing directory: {directoryPath}");
-
-        string[] csFiles = Directory.GetFiles(directoryPath, "*.cs", SearchOption.AllDirectories);
-
-        if (csFiles.Length == 0)
-        {
-            WriteLine("No C# files found in the specified directory.");
-            return 0;
-        }
-
-        int successCount = 0;
-        int errorCount = 0;
-
-        foreach (string filePath in csFiles)
-        {
-            int ret = ProcessFile(filePath);
-            if (ret == 0)
-                successCount++;
-            else
-                errorCount++;
-        }
-
-        WriteLine();
-        WriteLine($"Processing complete: {successCount} files organized, {errorCount} errors.");
-
-        return errorCount > 0 ? 1 : 0;
-    }
-
     private static void Write(string content)
     {
         Write(content, foregroundColor: null, backgroundColor: null);
@@ -158,16 +158,6 @@ public static class Program
     private static void Write(string content, ConsoleColor? foregroundColor)
     {
         Write(content, foregroundColor: foregroundColor, backgroundColor: null);
-    }
-
-    private static void WriteLine(string? content = null)
-    {
-        WriteLine(content, foregroundColor: null, backgroundColor: null);
-    }
-
-    private static void WriteLine(string? content, ConsoleColor? foregroundColor)
-    {
-        WriteLine(content, foregroundColor: foregroundColor, backgroundColor: null);
     }
 
     private static void Write(
@@ -185,6 +175,16 @@ public static class Program
 
         if (foregroundColor != null || backgroundColor != null)
             Console.ResetColor();
+    }
+
+    private static void WriteLine(string? content = null)
+    {
+        WriteLine(content, foregroundColor: null, backgroundColor: null);
+    }
+
+    private static void WriteLine(string? content, ConsoleColor? foregroundColor)
+    {
+        WriteLine(content, foregroundColor: foregroundColor, backgroundColor: null);
     }
 
     private static void WriteLine(

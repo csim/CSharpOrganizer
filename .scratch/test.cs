@@ -48,6 +48,9 @@ public class Class2
     private bool _test2 = true;
     private bool _test3 = true;
     public bool _test1 = true;
+
+
+
 }
 
 public class Class1

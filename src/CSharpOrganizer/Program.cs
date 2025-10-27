@@ -24,8 +24,9 @@ public static class Program
         //     @"C:\prose_wip\tformula\Transformation.Formula\Semantics\Extensions\IProgramNodeBuilder.Extension.cs",
         // ];
         //args = [@"C:\src\CSharpOrganizer\.scratch\test.cs"];
-        //args = [@"C:\src\CSharpOrganizer\.scratch\test1.cs"];
+        //args = [@"C:\src\CSharpOrganizer\.scratch\test.cs"];
         //args = [@"C:\src\CSharpOrganizer\.scratch\test2.cs"];
+        //_debug = true;
 
         if (args.Length == 0)
         {
@@ -48,7 +49,6 @@ public static class Program
             Stopwatch watch = Stopwatch.StartNew();
             int ret = 0;
 
-            // Check if the path is a directory
             if (Directory.Exists(path))
             {
                 ret = ProcessDirectory(path);
@@ -91,7 +91,7 @@ public static class Program
         try
         {
             string fileContent = File.ReadAllText(filePath);
-            string organizedContent = OrganizerService.OrganizeFile(fileContent);
+            string organizedContent = OrganizeService.OrganizeFile(fileContent);
 
             if (!_debug)
             {

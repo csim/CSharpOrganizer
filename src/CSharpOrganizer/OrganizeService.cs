@@ -128,7 +128,6 @@ public static partial class OrganizeService
             .OrderBy(f => AccessModifierPriority(f.Modifiers))
             .ToList();
 
-        // Create new class with reorganized members
         return new SyntaxList<MemberDeclarationSyntax>(
             [
                 .. namespaces,

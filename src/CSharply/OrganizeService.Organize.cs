@@ -36,6 +36,13 @@ public partial class OrganizeService
     {
         subject = subject.RemoveRegions().WithMembers(OrganizeMembers(subject.Members));
 
+        if (subject.Usings.Count > 0)
+        {
+            subject = subject
+                .WithUsings(Organize(subject.Usings))
+                .ReplaceUsing(0, m => m.WithOneLeadingBlankLine());
+        }
+
         return subject.WithoutBlankLineTrivia();
     }
 
@@ -53,10 +60,16 @@ public partial class OrganizeService
                 .ReplaceUsing(0, m => m.WithOneLeadingBlankLine());
         }
 
-        subject = subject.WithMembers(members);
-
-        if (subject is NamespaceDeclarationSyntax && members.Count > 0)
+        if (subject is NamespaceDeclarationSyntax namespaceBlock && members.Count > 0)
         {
+            subject = namespaceBlock.WithOpenBraceToken(
+                namespaceBlock.OpenBraceToken.WithoutTrailingBlankLineTrivia()
+            );
+
+            subject = namespaceBlock.WithCloseBraceToken(
+                namespaceBlock.CloseBraceToken.WithoutLeadingBlankLineTrivia()
+            );
+
             subject = subject.ReplaceMember(0, m => m.WithoutLeadingBlankLines());
         }
 
@@ -127,30 +140,23 @@ public partial class OrganizeService
     {
         subject = subject.RemoveRegions().WithMembers(OrganizeMembers(subject.Members));
 
-        bool allLeadingWhitespace = subject.OpenBraceToken.TrailingTrivia.All(i =>
-            i.IsKind(SyntaxKind.WhitespaceTrivia) || i.IsKind(SyntaxKind.EndOfLineTrivia)
-        );
-        if (allLeadingWhitespace)
-        {
-            subject = subject.WithOpenBraceToken(
-                subject.OpenBraceToken.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed)
-            );
-        }
+        // bool allLeadingWhitespace = subject.OpenBraceToken.TrailingTrivia.All(i =>
+        //     i.IsKind(SyntaxKind.WhitespaceTrivia) || i.IsKind(SyntaxKind.EndOfLineTrivia)
+        // );
+        // if (allLeadingWhitespace)
+        // {
+        //     subject = subject.WithOpenBraceToken(
+        //         subject.OpenBraceToken.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed)
+        //     );
+        // }
 
-        allLeadingWhitespace = subject.CloseBraceToken.LeadingTrivia.All(i =>
-            i.IsKind(SyntaxKind.WhitespaceTrivia) || i.IsKind(SyntaxKind.EndOfLineTrivia)
+        subject = subject.WithOpenBraceToken(
+            subject.OpenBraceToken.WithoutTrailingBlankLineTrivia()
         );
 
-        if (allLeadingWhitespace)
-        {
-            IEnumerable<SyntaxTrivia> indentationTrivia =
-                subject.CloseBraceToken.LeadingTrivia.Where(i =>
-                    i.IsKind(SyntaxKind.WhitespaceTrivia)
-                );
-            subject = subject.WithCloseBraceToken(
-                subject.CloseBraceToken.WithLeadingTrivia(indentationTrivia)
-            );
-        }
+        subject = subject.WithCloseBraceToken(
+            subject.CloseBraceToken.WithoutLeadingBlankLineTrivia()
+        );
 
         if (subject.Members.Count > 0)
         {

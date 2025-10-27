@@ -2,3 +2,9 @@
 
 # CA1707: Identifiers should not contain underscores
 dotnet_diagnostic.CA1707.severity = none
+
+# IDE0051: Remove unused private members
+dotnet_diagnostic.IDE0051.severity = none
+
+# CA1822: Mark members as static
+dotnet_diagnostic.CA1822.severity = none

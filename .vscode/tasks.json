@@ -123,6 +123,8 @@
       "type": "process",
       "args": [
         "test",
+        "--logger",
+        "console;verbosity=detailed"
       ],
       "options": {
         "saveBeforeRun": "allFiles",

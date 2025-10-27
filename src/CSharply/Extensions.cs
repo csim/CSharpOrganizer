@@ -218,6 +218,21 @@ public static class Extensions
         return source.WithLeadingTrivia(new SyntaxTriviaList(cleanedTrivia));
     }
 
+    public static SyntaxToken WithoutLeadingBlankLineTrivia(this SyntaxToken node)
+    {
+        bool allLeadingWhitespace = node.LeadingTrivia.All(i =>
+            i.IsKind(SyntaxKind.WhitespaceTrivia) || i.IsKind(SyntaxKind.EndOfLineTrivia)
+        );
+        if (!allLeadingWhitespace)
+            return node;
+
+        IEnumerable<SyntaxTrivia> indentationTrivia = node.LeadingTrivia.Where(i =>
+            i.IsKind(SyntaxKind.WhitespaceTrivia)
+        );
+
+        return node.WithLeadingTrivia(indentationTrivia);
+    }
+
     public static SyntaxToken WithoutTrailingBlankLines(this SyntaxToken source)
     {
         SyntaxTriviaList trailingTrivia = source.TrailingTrivia;
@@ -265,5 +280,16 @@ public static class Extensions
         cleanedTrivia.Add(_lineEnding);
 
         return source.WithTrailingTrivia(new SyntaxTriviaList(cleanedTrivia));
+    }
+
+    public static SyntaxToken WithoutTrailingBlankLineTrivia(this SyntaxToken node)
+    {
+        bool allTrailingWhitespace = node.TrailingTrivia.All(i =>
+            i.IsKind(SyntaxKind.WhitespaceTrivia) || i.IsKind(SyntaxKind.EndOfLineTrivia)
+        );
+        if (!allTrailingWhitespace)
+            return node;
+
+        return node.WithTrailingTrivia(_lineEnding);
     }
 }

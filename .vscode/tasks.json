@@ -2,6 +2,42 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "organize-csharp-file",
+      "type": "process",
+      "command": "csharp-organizer",
+      "args": [
+        "${file}"
+      ],
+      "group": "none",
+      "presentation": {
+        "reveal": "never",
+        "panel": "shared",
+        "showReuseMessage": false
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "organize-csharp-project",
+      "type": "process",
+      "command": "csharp-organizer",
+      "args": [
+        "${workspaceFolder}/src"
+      ],
+      "group": "none",
+      "presentation": {
+        "reveal": "never",
+        "panel": "shared",
+        "showReuseMessage": false
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "build",
       "group": {
         "kind": "build",

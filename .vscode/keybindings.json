@@ -1,0 +1,12 @@
+[
+  {
+    "key": "ctrl+e",
+    "command": "-workbench.action.quickOpen"
+  },
+  {
+    "key": "ctrl+e ctrl+f",
+    "command": "workbench.action.tasks.runTask",
+    "args": "organize-csharp-file",
+    "when": "editorTextFocus && resourceExtname == .cs"
+  }
+]

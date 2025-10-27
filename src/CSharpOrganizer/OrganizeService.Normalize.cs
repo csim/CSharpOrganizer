@@ -50,32 +50,6 @@ public static partial class OrganizeService
     {
         source = source.WithMembers(NormalizeBlankLines(source.Members));
 
-        // bool alterOpenBrace = source.OpenBraceToken.TrailingTrivia.All(i =>
-        //     i.IsKind(SyntaxKind.WhitespaceTrivia) || i.IsKind(SyntaxKind.EndOfLineTrivia)
-        // );
-        // if (alterOpenBrace)
-        // {
-        //     source = source.WithOpenBraceToken(
-        //         source.OpenBraceToken.WithTrailingTrivia(_lineEnding)
-        //     );
-        // }
-
-        // bool alterCloseBrace = source.CloseBraceToken.LeadingTrivia.All(i =>
-        //     i.IsKind(SyntaxKind.WhitespaceTrivia) || i.IsKind(SyntaxKind.EndOfLineTrivia)
-        // );
-        // if (alterCloseBrace)
-        // {
-        //     List<SyntaxTrivia> newLeadingTrivia = source.CloseBraceToken.LeadingTrivia.ToList();
-        //     newLeadingTrivia.Reverse();
-        //     newLeadingTrivia = newLeadingTrivia
-        //         .TakeWhile(t => !t.IsKind(SyntaxKind.EndOfLineTrivia))
-        //         .ToList();
-        //     newLeadingTrivia.Reverse();
-        //     source = source.WithCloseBraceToken(
-        //         source.CloseBraceToken.WithLeadingTrivia(newLeadingTrivia)
-        //     );
-        // }
-
         if (source.Members.Count > 0)
         {
             source = source.ReplaceMember(0, m => m.WithoutLeadingBlankLines());

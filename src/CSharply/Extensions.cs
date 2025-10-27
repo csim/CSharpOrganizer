@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace CSharpOrganizer;
+namespace CSharply;
 
 public static class Extensions
 {

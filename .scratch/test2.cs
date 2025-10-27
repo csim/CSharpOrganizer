@@ -2,7 +2,7 @@
 using System.Text;
 
 // leading namespace comment
-namespace Text.Organizer; // namespace comment
+namespace Text.Namespace1; // namespace comment
 
 public class Class1
 {
@@ -12,6 +12,4 @@ public class Class1
     public bool _test1 = true;
     private bool _test2 = true;
     private bool _test3 = true; // test3 comment
-    
-    
 }

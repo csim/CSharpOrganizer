@@ -10,8 +10,8 @@ on:
 env:
   DOTNET_VERSION: "8.0.x"
   BUILD_CONFIG: "Release"
-  SOLUTION: "src/CSharpOrganizer.slnx"
-  PROJECT: "src/CSharpOrganizer/CSharpOrganizer.csproj"
+  SOLUTION: "src/CSharply.slnx"
+  PROJECT: "src/CSharply/CSharply.csproj"
   PREVIEW_VERSION: "2.0.0"
 
 jobs:

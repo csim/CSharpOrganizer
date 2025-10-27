@@ -1,6 +1,6 @@
 try {
     # Uninstall the global tool
-    dotnet tool uninstall --global CSharpOrganizer
+    dotnet tool uninstall --global CSharply
 }
 catch {
     Write-Host "Error during uninstallation: $($_.Exception.Message)" -ForegroundColor Red

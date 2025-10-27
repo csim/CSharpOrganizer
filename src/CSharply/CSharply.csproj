@@ -1,38 +1,17 @@
-﻿<!-- <Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <PackAsTool>true</PackAsTool>
-    <ToolCommandName>csharp-organizer</ToolCommandName>
-    <PackageId>CSharpOrganizer</PackageId>
-    <Version>1.0.0</Version>
-    <Authors>Clint Simon</Authors>
-    <Description>A .NET tool to organize C# code files.</Description>
-    <PackageProjectUrl>https://github.com/yourusername/CSharpOrganizer</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/yourusername/CSharpOrganizer</RepositoryUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageTags>csharp;code-formatter;dotnet-tool;roslyn</PackageTags>
-  </PropertyGroup>
-  <ItemGroup>
-  </ItemGroup>
-</Project>
- -->
-
-
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <PackAsTool>true</PackAsTool>
-    <ToolCommandName>csharp-organizer</ToolCommandName>
+    <ToolCommandName>CSharply</ToolCommandName>
 
     <!-- Package metadata -->
-    <PackageId>CSharpOrganizer</PackageId>
+    <PackageId>CSharply</PackageId>
     <Version>1.0.0</Version>
     <Authors>csim</Authors>
     <Description>A .NET tool to organize C# code files using Roslyn</Description>
-    <PackageProjectUrl>https://github.com/csim/CSharpOrganizer</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/csim/CSharpOrganizer</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/csim/CSharply</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/csim/CSharply</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>csharp;code-formatter;dotnet-tool;roslyn</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>

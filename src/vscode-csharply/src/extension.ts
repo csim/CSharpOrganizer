@@ -4,11 +4,11 @@ import * as path from "path";
 import * as fs from "fs";
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log("CSharp Organizer extension is now active!");
+  console.log("CSharply extension is now active!");
 
   // Register organize command
   let organizeDisposable = vscode.commands.registerCommand(
-    "csharp-organizer.organize",
+    "csharply.organize",
     async (uri: vscode.Uri) => {
       const targetUri = uri || vscode.window.activeTextEditor?.document.uri;
       if (targetUri) {
@@ -19,7 +19,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Register organize all command
   let organizeAllDisposable = vscode.commands.registerCommand(
-    "csharp-organizer.organizeAll",
+    "csharply.organizeAll",
     async (uri: vscode.Uri) => {
       if (uri) {
         await organizeDirectory(uri);
@@ -30,7 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
   // Register on save handler
   let onSaveDisposable = vscode.workspace.onDidSaveTextDocument(
     async (document) => {
-      const config = vscode.workspace.getConfiguration("csharpOrganizer");
+      const config = vscode.workspace.getConfiguration("csharply");
       const organizeOnSave = config.get<boolean>("organizeOnSave", false);
 
       if (
@@ -62,11 +62,8 @@ async function organizeFile(uri: vscode.Uri): Promise<void> {
     return;
   }
 
-  const config = vscode.workspace.getConfiguration("csharpOrganizer");
-  const executablePath = config.get<string>(
-    "executablePath",
-    "csharp-organizer"
-  );
+  const config = vscode.workspace.getConfiguration("csharply");
+  const executablePath = config.get<string>("executablePath", "csharply");
 
   try {
     await vscode.window.withProgress(
@@ -76,7 +73,7 @@ async function organizeFile(uri: vscode.Uri): Promise<void> {
         cancellable: false,
       },
       async () => {
-        await runOrganizer(executablePath, filePath);
+        await organize(executablePath, filePath);
       }
     );
 
@@ -97,11 +94,8 @@ async function organizeFile(uri: vscode.Uri): Promise<void> {
 }
 
 async function organizeDirectory(uri: vscode.Uri): Promise<void> {
-  const config = vscode.workspace.getConfiguration("csharpOrganizer");
-  const executablePath = config.get<string>(
-    "executablePath",
-    "csharp-organizer"
-  );
+  const config = vscode.workspace.getConfiguration("csharply");
+  const executablePath = config.get<string>("executablePath", "csharply");
 
   try {
     const result = await vscode.window.withProgress(
@@ -111,7 +105,7 @@ async function organizeDirectory(uri: vscode.Uri): Promise<void> {
         cancellable: false,
       },
       async () => {
-        return await runOrganizer(executablePath, uri.fsPath);
+        return await organize(executablePath, uri.fsPath);
       }
     );
 
@@ -127,10 +121,7 @@ async function organizeDirectory(uri: vscode.Uri): Promise<void> {
   }
 }
 
-function runOrganizer(
-  executablePath: string,
-  targetPath: string
-): Promise<string> {
+function organize(executablePath: string, targetPath: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const args = [targetPath];
 

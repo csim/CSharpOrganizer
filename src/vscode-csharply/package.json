@@ -1,6 +1,6 @@
 {
-  "name": "csharp-organizer",
-  "displayName": "CSharp Organizer",
+  "name": "csharply",
+  "displayName": "CSharply",
   "description": "Organizes C# code files using Roslyn",
   "version": "0.0.1",
   "engines": {
@@ -15,32 +15,32 @@
   "contributes": {
     "commands": [
       {
-        "command": "csharp-organizer.organize",
+        "command": "csharply.organize",
         "title": "Organize C# File",
-        "category": "CSharp Organizer"
+        "category": "CSharply"
       },
       {
-        "command": "csharp-organizer.organizeAll",
+        "command": "csharply.organizeAll",
         "title": "Organize All C# Files",
-        "category": "CSharp Organizer"
+        "category": "CSharply"
       }
     ],
     "menus": {
       "editor/context": [
         {
-          "command": "csharp-organizer.organize",
+          "command": "csharply.organize",
           "when": "resourceExtname == .cs",
           "group": "1_modification"
         }
       ],
       "explorer/context": [
         {
-          "command": "csharp-organizer.organize",
+          "command": "csharply.organize",
           "when": "resourceExtname == .cs",
           "group": "1_modification"
         },
         {
-          "command": "csharp-organizer.organizeAll",
+          "command": "csharply.organizeAll",
           "when": "explorerResourceIsFolder",
           "group": "1_modification"
         }
@@ -48,20 +48,20 @@
     },
     "keybindings": [
       {
-        "command": "csharp-organizer.organize",
+        "command": "csharply.organize",
         "key": "ctrl+shift+o",
         "when": "resourceExtname == .cs"
       }
     ],
     "configuration": {
-      "title": "CSharp Organizer",
+      "title": "CSharply",
       "properties": {
-        "csharpOrganizer.executablePath": {
+        "csharply.executablePath": {
           "type": "string",
-          "default": "csharp-organizer",
-          "description": "Path to the CSharp Organizer executable"
+          "default": "csharply",
+          "description": "Path to the CSharply executable"
         },
-        "csharpOrganizer.organizeOnSave": {
+        "csharply.organizeOnSave": {
           "type": "boolean",
           "default": false,
           "description": "Automatically organize C# files on save"

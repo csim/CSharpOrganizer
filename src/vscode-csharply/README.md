@@ -1,6 +1,6 @@
-# csharp-organizer README
+# csharply README
 
-This is the README for your extension "csharp-organizer". After writing up a brief description, we recommend including the following sections.
+This is the README for your extension "csharply". After writing up a brief description, we recommend including the following sections.
 
 ## Features
 

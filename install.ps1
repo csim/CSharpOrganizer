@@ -1,5 +1,5 @@
-#dotnet build $PSScriptRoot\src\CSharpOrganizer\CSharpOrganizer.csproj --configuration release
+#dotnet build $PSScriptRoot\src\CSharply\CSharply.csproj --configuration release
 
-dotnet pack $PSScriptRoot\src\CSharpOrganizer\CSharpOrganizer.csproj --configuration Release --output $PSScriptRoot\packages
+dotnet pack $PSScriptRoot\src\CSharply\CSharply.csproj --configuration Release --output $PSScriptRoot\packages
 
-dotnet tool install --global --add-source $PSScriptRoot\packages CSharpOrganizer
+dotnet tool install --global --add-source $PSScriptRoot\packages CSharply

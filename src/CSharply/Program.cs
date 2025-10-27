@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Text;
 
-namespace CSharpOrganizer;
+namespace CSharply;
 
 public static class Program
 {
@@ -25,21 +25,21 @@ public static class Program
         // [
         //     @"C:\prose_wip\tformula\Transformation.Formula\Semantics\Extensions\IProgramNodeBuilder.Extension.cs",
         // ];
-        //args = [@"C:\src\CSharpOrganizer\.scratch\test.cs"];
-        //args = [@"C:\src\CSharpOrganizer\.scratch\test.cs"];
-        //args = [@"C:\src\CSharpOrganizer\.scratch\test2.cs"];
+        //args = [@"C:\src\CSharply\.scratch\test.cs"];
+        //args = [@"C:\src\CSharply\.scratch\test.cs"];
+        //args = [@"C:\src\CSharply\.scratch\test2.cs"];
         //_debug = true;
 
         if (args.Length == 0)
         {
-            WriteLine("Usage: csharp-organizer <file-path-or-directory>");
+            WriteLine("Usage: csharply <file-path-or-directory>");
             WriteLine("Organizes C# code in the specified file or all .cs files in a directory.");
             WriteLine();
             WriteLine("Examples:");
-            WriteLine("  csharp-organizer MyClass.cs");
-            WriteLine("  csharp-organizer src/Services/UserService.cs");
-            WriteLine("  csharp-organizer src/");
-            WriteLine("  csharp-organizer .");
+            WriteLine("  csharply MyClass.cs");
+            WriteLine("  csharply src/Services/UserService.cs");
+            WriteLine("  csharply src/");
+            WriteLine("  csharply .");
 
             return 1;
         }

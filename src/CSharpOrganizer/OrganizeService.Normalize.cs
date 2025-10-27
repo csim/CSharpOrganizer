@@ -9,125 +9,125 @@ namespace CSharpOrganizer;
 
 public static partial class OrganizeService
 {
-    private static CompilationUnitSyntax NormalizeBlankLines(CompilationUnitSyntax source)
+    private static CompilationUnitSyntax NormalizeBlankLines(CompilationUnitSyntax subject)
     {
-        List<MemberDeclarationSyntax> newMembers = NormalizeBlankLines(source.Members).ToList();
+        List<MemberDeclarationSyntax> members = NormalizeBlankLines(subject.Members).ToList();
 
-        if (source.Usings.Count > 0)
+        if (subject.Usings.Count > 0)
         {
-            source = source.WithUsings(NormalizeBlankLines(source.Usings));
-            source = source.ReplaceUsing(0, m => m.WithOneLeadingBlankLine());
+            subject = subject.WithUsings(NormalizeBlankLines(subject.Usings));
+            subject = subject.ReplaceUsing(0, m => m.WithOneLeadingBlankLine());
         }
 
-        return source.WithMembers(newMembers);
+        return subject.WithMembers(members);
     }
 
     private static BaseNamespaceDeclarationSyntax NormalizeBlankLines(
-        BaseNamespaceDeclarationSyntax source
+        BaseNamespaceDeclarationSyntax subject
     )
     {
-        List<MemberDeclarationSyntax> newMembers = NormalizeBlankLines(source.Members).ToList();
+        List<MemberDeclarationSyntax> members = NormalizeBlankLines(subject.Members).ToList();
 
-        if (source.Usings.Count > 0)
+        if (subject.Usings.Count > 0)
         {
-            source = source.WithUsings(NormalizeBlankLines(source.Usings));
-            source = source.ReplaceUsing(0, m => m.WithOneLeadingBlankLine());
+            subject = subject.WithUsings(NormalizeBlankLines(subject.Usings));
+            subject = subject.ReplaceUsing(0, m => m.WithOneLeadingBlankLine());
         }
 
-        source = source.WithMembers(newMembers);
+        subject = subject.WithMembers(members);
 
-        if (source is NamespaceDeclarationSyntax && newMembers.Count > 0)
+        if (subject is NamespaceDeclarationSyntax && members.Count > 0)
         {
-            newMembers[0] = newMembers[0].WithoutLeadingBlankLines();
+            members[0] = members[0].WithoutLeadingBlankLines();
         }
 
-        return source.WithOneLeadingBlankLine();
+        return subject.WithOneLeadingBlankLine();
     }
 
-    private static ClassDeclarationSyntax NormalizeBlankLines(ClassDeclarationSyntax source)
+    private static ClassDeclarationSyntax NormalizeBlankLines(ClassDeclarationSyntax subject)
     {
-        source = source.WithMembers(NormalizeBlankLines(source.Members));
+        subject = subject.WithMembers(NormalizeBlankLines(subject.Members));
 
-        if (source.Members.Count > 0)
+        if (subject.Members.Count > 0)
         {
-            source = source.ReplaceMember(0, m => m.WithoutLeadingBlankLines());
+            subject = subject.ReplaceMember(0, m => m.WithoutLeadingBlankLines());
         }
 
-        return source.WithOneLeadingBlankLine().WithoutTrailingBlankLines();
+        return subject.WithOneLeadingBlankLine().WithoutTrailingBlankLines();
     }
 
-    private static InterfaceDeclarationSyntax NormalizeBlankLines(InterfaceDeclarationSyntax source)
+    private static InterfaceDeclarationSyntax NormalizeBlankLines(
+        InterfaceDeclarationSyntax subject
+    )
     {
-        source = source.WithMembers(NormalizeBlankLines(source.Members));
+        subject = subject.WithMembers(NormalizeBlankLines(subject.Members));
 
-        if (source.Members.Count > 0)
+        if (subject.Members.Count > 0)
         {
-            source = source.ReplaceMember(0, m => m.WithoutLeadingBlankLines());
+            subject = subject.ReplaceMember(0, m => m.WithoutLeadingBlankLines());
         }
 
-        return source.WithOneLeadingBlankLine().WithoutTrailingBlankLines();
+        return subject.WithOneLeadingBlankLine().WithoutTrailingBlankLines();
     }
 
-    private static EnumDeclarationSyntax NormalizeBlankLines(EnumDeclarationSyntax source)
+    private static EnumDeclarationSyntax NormalizeBlankLines(EnumDeclarationSyntax subject)
     {
-        return source.WithOneLeadingBlankLine().WithoutTrailingBlankLines();
+        return subject.WithOneLeadingBlankLine().WithoutTrailingBlankLines();
     }
 
     private static SyntaxList<MemberDeclarationSyntax> NormalizeBlankLines(
-        SyntaxList<MemberDeclarationSyntax> sourceMembers
+        SyntaxList<MemberDeclarationSyntax> subjectMembers
     )
     {
-        if (sourceMembers.Count == 0)
-            return sourceMembers;
+        if (subjectMembers.Count == 0)
+            return subjectMembers;
 
-        List<MemberDeclarationSyntax> targetMembers = sourceMembers.ToList();
+        List<MemberDeclarationSyntax> members = subjectMembers.ToList();
 
-        for (int i = 0; i < targetMembers.Count; i++)
+        for (int i = 0; i < members.Count; i++)
         {
-            targetMembers[i] = targetMembers[i] switch
+            members[i] = members[i] switch
             {
                 BaseNamespaceDeclarationSyntax item => NormalizeBlankLines(item),
                 ClassDeclarationSyntax item => NormalizeBlankLines(item),
                 InterfaceDeclarationSyntax item => NormalizeBlankLines(item),
                 EnumDeclarationSyntax item => NormalizeBlankLines(item),
-                _ => targetMembers[i],
+                _ => members[i],
             };
         }
 
-        for (int i = 0; i < targetMembers.Count; i++)
+        for (int i = 0; i < members.Count; i++)
         {
-            if (targetMembers[i] is FieldDeclarationSyntax f)
+            if (members[i] is FieldDeclarationSyntax f)
             {
-                targetMembers[i] = targetMembers[i].WithoutBlankLineTrivia();
+                members[i] = members[i].WithoutBlankLineTrivia();
             }
 
             if (
-                targetMembers[i]
+                members[i]
                 is PropertyDeclarationSyntax
                     or ConstructorDeclarationSyntax
                     or MethodDeclarationSyntax
                     or EnumDeclarationSyntax
             )
             {
-                targetMembers[i] = targetMembers[i]
-                    .WithOneLeadingBlankLine()
-                    .WithoutTrailingBlankLines();
+                members[i] = members[i].WithOneLeadingBlankLine().WithoutTrailingBlankLines();
             }
         }
 
-        return new SyntaxList<MemberDeclarationSyntax>(targetMembers);
+        return new SyntaxList<MemberDeclarationSyntax>(members);
     }
 
     private static SyntaxList<UsingDirectiveSyntax> NormalizeBlankLines(
-        SyntaxList<UsingDirectiveSyntax> sourceUsings
+        SyntaxList<UsingDirectiveSyntax> subjectUsings
     )
     {
-        if (sourceUsings.Count == 0)
+        if (subjectUsings.Count == 0)
         {
-            return sourceUsings;
+            return subjectUsings;
         }
 
-        List<UsingDirectiveSyntax> newUsings = sourceUsings
+        List<UsingDirectiveSyntax> usings = subjectUsings
             .OrderBy(u =>
                 u.Name?.ToString().StartsWith("System", StringComparison.OrdinalIgnoreCase) == true
                     ? 0
@@ -136,13 +136,13 @@ public static partial class OrganizeService
             .ThenBy(u => u.Name?.ToString() ?? string.Empty)
             .ToList();
 
-        for (int i = 0; i < sourceUsings.Count; i++)
+        for (int i = 0; i < subjectUsings.Count; i++)
         {
-            newUsings[i] = newUsings[i].WithoutBlankLineTrivia();
+            usings[i] = usings[i].WithoutBlankLineTrivia();
         }
 
-        newUsings[0] = newUsings[0].WithOneLeadingBlankLine();
+        usings[0] = usings[0].WithOneLeadingBlankLine();
 
-        return new SyntaxList<UsingDirectiveSyntax>(newUsings);
+        return new SyntaxList<UsingDirectiveSyntax>(usings);
     }
 }

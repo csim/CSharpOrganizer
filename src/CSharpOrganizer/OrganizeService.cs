@@ -11,12 +11,11 @@ public static partial class OrganizeService
 {
     public static string OrganizeFile(string code)
     {
-        SyntaxTree sourceTree = CSharpSyntaxTree.ParseText(code);
-        CompilationUnitSyntax sourceRoot = (CompilationUnitSyntax)sourceTree.GetRoot();
+        SyntaxTree tree = CSharpSyntaxTree.ParseText(code);
+        CompilationUnitSyntax root = (CompilationUnitSyntax)tree.GetRoot();
+        root = Organize(root);
 
-        CompilationUnitSyntax targetTree = Organize(sourceRoot);
-
-        return targetTree.ToFullString().Trim() + "\r\n";
+        return root.ToFullString().Trim() + "\r\n";
     }
 
     private static int AccessModifierPriority(SyntaxTokenList modifiers)
@@ -30,7 +29,7 @@ public static partial class OrganizeService
         if (modifiers.Any(m => m.IsKind(SyntaxKind.PrivateKeyword)))
             return 3;
 
-        return 3; //  treat as private
+        return 3;
     }
 
     private static CompilationUnitSyntax Organize(CompilationUnitSyntax source)

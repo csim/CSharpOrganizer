@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Solution>
     <Project Path="CSharply\CSharply.csproj" />
+    <Project Path="CSharply.Tests\CSharply.Tests.csproj" />
 </Solution>

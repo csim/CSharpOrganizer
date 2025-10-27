@@ -11,9 +11,9 @@ namespace CSharply;
 
 public partial class OrganizeService(Options options)
 {
-    private static int _failCount;
+    private int _failCount;
     private readonly object _lock = new();
-    private static int _successCount;
+    private int _successCount;
 
     public OrganizeResult Process(string path)
     {

@@ -15,11 +15,12 @@ public static partial class OrganizeService
 
         if (subject.Usings.Count > 0)
         {
-            subject = subject.WithUsings(NormalizeBlankLines(subject.Usings));
-            subject = subject.ReplaceUsing(0, m => m.WithOneLeadingBlankLine());
+            subject = subject
+                .WithUsings(NormalizeBlankLines(subject.Usings))
+                .ReplaceUsing(0, m => m.WithOneLeadingBlankLine());
         }
 
-        return subject.WithMembers(members);
+        return subject.WithMembers(members).WithoutTrailingBlankLines();
     }
 
     private static BaseNamespaceDeclarationSyntax NormalizeBlankLines(
@@ -30,18 +31,19 @@ public static partial class OrganizeService
 
         if (subject.Usings.Count > 0)
         {
-            subject = subject.WithUsings(NormalizeBlankLines(subject.Usings));
-            subject = subject.ReplaceUsing(0, m => m.WithOneLeadingBlankLine());
+            subject = subject
+                .WithUsings(NormalizeBlankLines(subject.Usings))
+                .ReplaceUsing(0, m => m.WithOneLeadingBlankLine());
         }
 
         subject = subject.WithMembers(members);
 
         if (subject is NamespaceDeclarationSyntax && members.Count > 0)
         {
-            members[0] = members[0].WithoutLeadingBlankLines();
+            subject = subject.ReplaceMember(0, m => m.WithoutLeadingBlankLines());
         }
 
-        return subject.WithOneLeadingBlankLine();
+        return subject.WithOneLeadingBlankLine().WithoutTrailingBlankLines();
     }
 
     private static ClassDeclarationSyntax NormalizeBlankLines(ClassDeclarationSyntax subject)

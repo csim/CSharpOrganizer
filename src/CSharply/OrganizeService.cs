@@ -10,14 +10,17 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CSharply;
 
-public partial class OrganizeService(Options options)
+public partial class OrganizeService(IgnoreFileService ignoreService, Options options)
 {
     private readonly List<string> _failFiles = [];
     private readonly List<string> _skipFiles = [];
     private readonly List<string> _successFiles = [];
 
     public OrganizeService()
-        : this(new Options()) { }
+        : this(new IgnoreFileService(), new Options()) { }
+
+    public OrganizeService(Options options)
+        : this(new IgnoreFileService(), options) { }
 
     public OrganizeResult Process(string path)
     {
@@ -101,6 +104,13 @@ public partial class OrganizeService(Options options)
 
     private void Process(FileInfo file)
     {
+        if (ignoreService.Ignore(file))
+        {
+            AddSkipFile(file);
+
+            return;
+        }
+
         if (!file.Extension.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
         {
             AddSkipFile(file);
@@ -108,35 +118,35 @@ public partial class OrganizeService(Options options)
             return;
         }
 
-        if (
-            file.Name.Contains("Utils.cs")
-            || file.Name == "DateTimeFormat.cs"
-            || file.Name == "Heuristics.cs"
-            || file.Name == "TypeResolver.cs"
-            || file.Name == "BenchmarkCase.cs"
-            || file.Name == "SupportedExcelFeatures.cs"
-            || file.Name == "TableFuzzer.cs"
-        )
-        {
-            AddSkipFile(file);
+        // if (
+        //     file.Name.Contains("Utils.cs")
+        //     || file.Name == "DateTimeFormat.cs"
+        //     || file.Name == "Heuristics.cs"
+        //     || file.Name == "TypeResolver.cs"
+        //     || file.Name == "BenchmarkCase.cs"
+        //     || file.Name == "SupportedExcelFeatures.cs"
+        //     || file.Name == "TableFuzzer.cs"
+        // )
+        // {
+        //     AddSkipFile(file);
 
-            return;
-        }
+        //     return;
+        // }
 
         try
         {
             string fileContent = File.ReadAllText(file.FullName);
 
-            if (
-                fileContent.Contains("#if")
-                || fileContent.Contains("#endif")
-                || fileContent.Contains("#nullable")
-            )
-            {
-                AddSkipFile(file);
+            // if (
+            //     fileContent.Contains("#if")
+            //     || fileContent.Contains("#endif")
+            //     || fileContent.Contains("#nullable")
+            // )
+            // {
+            //     AddSkipFile(file);
 
-                return;
-            }
+            //     return;
+            // }
 
             string organizedContent = OrganizeCode(fileContent);
 

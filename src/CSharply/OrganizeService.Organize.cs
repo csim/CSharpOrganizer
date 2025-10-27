@@ -176,7 +176,6 @@ public partial class OrganizeService
             .Select(Organize)
             .ToList();
 
-        // Separate members by type
         List<FieldDeclarationSyntax> fields = members
             .OfType<FieldDeclarationSyntax>()
             .Select(Organize)

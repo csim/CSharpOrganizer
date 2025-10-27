@@ -42,6 +42,7 @@ public class Class2
 
     public class SubClass1
     {
+
     }
 
     private bool _test2 = true;

@@ -112,23 +112,30 @@ public static class OrganizerService
 
     private static ClassDeclarationSyntax NormalizeBlankLines(ClassDeclarationSyntax source)
     {
-        bool allLeadingWhitespace = source.OpenBraceToken.TrailingTrivia.All(i =>
+        bool alterBrace = source.OpenBraceToken.TrailingTrivia.All(i =>
             i.IsKind(SyntaxKind.WhitespaceTrivia) || i.IsKind(SyntaxKind.EndOfLineTrivia)
         );
-        if (allLeadingWhitespace)
+        if (alterBrace)
         {
             source = source.WithOpenBraceToken(
                 source.OpenBraceToken.WithTrailingTrivia(_lineEnding)
             );
         }
 
-        allLeadingWhitespace = source.CloseBraceToken.LeadingTrivia.All(i =>
+        alterBrace = source.CloseBraceToken.LeadingTrivia.All(i =>
             i.IsKind(SyntaxKind.WhitespaceTrivia) || i.IsKind(SyntaxKind.EndOfLineTrivia)
         );
-
-        if (allLeadingWhitespace)
+        if (alterBrace)
         {
-            source = source.WithCloseBraceToken(source.CloseBraceToken.WithLeadingTrivia());
+            List<SyntaxTrivia> newLeadingTrivia = source.CloseBraceToken.LeadingTrivia.ToList();
+            newLeadingTrivia.Reverse();
+            newLeadingTrivia = newLeadingTrivia
+                .TakeWhile(t => !t.IsKind(SyntaxKind.EndOfLineTrivia))
+                .ToList();
+            newLeadingTrivia.Reverse();
+            source = source.WithCloseBraceToken(
+                source.CloseBraceToken.WithLeadingTrivia(newLeadingTrivia)
+            );
         }
 
         source = source.WithMembers(NormalizeBlankLines(source.Members));

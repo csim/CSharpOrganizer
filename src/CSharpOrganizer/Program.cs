@@ -6,18 +6,23 @@ namespace CSharpOrganizer;
 
 public static class Program
 {
-    public static int Main()
+    public static int Main(string[] args)
     {
-        string[] args;
         //args = [@"C:\src\koalas\src\Koalas\Text\TextFieldSetItemBuilder.cs"];
         //args = [@"C:\src\koalas\src\Koalas\Text\"];
-        args = [@"C:\prose_wip\tformula\Transformation.Formula\"];
+        //args = [@"C:\prose_wip\tformula\Transformation.Formula\"];
+        // args =
+        // [
+        //     @"C:\prose_wip\tformula\Transformation.Formula\Semantics\Learning\Conditionals\PredicateFirst\Models\Cluster.cs",
+        // ];
+
         // args =
         // [
         //     @"C:\prose_wip\tformula\Transformation.Formula\Semantics\Extensions\IProgramNodeBuilder.Extension.cs",
         // ];
         //args = [@"C:\src\CSharpOrganizer\.scratch\test.cs"];
         //args = [@"C:\src\CSharpOrganizer\.scratch\test1.cs"];
+        //args = [@"C:\src\CSharpOrganizer\.scratch\test2.cs"];
 
         if (args.Length == 0)
         {
@@ -88,13 +93,13 @@ public static class Program
             File.WriteAllText(filePath, organizedContent, Encoding.UTF8);
 
             // WriteLine("====================");
-            //WriteLine($"{filePath}:");
+            // WriteLine($"{filePath}:");
             // WriteLine("---");
-            //WriteLine(organizedContent);
+            // WriteLine(organizedContent);
             // WriteLine("---");
 
-            //Write("✓", ConsoleColor.Green);
-            //WriteLine($" {filePath}");
+            // Write("✓", ConsoleColor.Green);
+            // WriteLine($" {filePath}");
 
             return 0;
         }

@@ -20,11 +20,11 @@
       "problemMatcher": []
     },
     {
-      "label": "csharply-project",
+      "label": "csharply-folder",
       "type": "process",
       "command": "csharply",
       "args": [
-        "${workspaceFolder}/src"
+        "${workspaceFolder}"
       ],
       "group": "none",
       "presentation": {
@@ -95,6 +95,7 @@
         "clear": true
       }
     },
+    // ------- RUN ctrl+shift+q -----------------------------
     {
       "label": "run",
       "command": "dotnet",

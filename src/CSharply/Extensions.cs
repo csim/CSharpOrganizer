@@ -6,6 +6,50 @@ public static class Extensions
 {
     private static readonly SyntaxTrivia _lineEnding = SyntaxFactory.CarriageReturnLineFeed;
 
+    public static T RemoveRegions<T>(this T node)
+        where T : SyntaxNode
+    {
+        List<SyntaxTrivia> allTrivia = node.DescendantTrivia(descendIntoTrivia: false).ToList();
+        List<SyntaxTrivia> triviaToRemove = [];
+
+        for (int i = 0; i < allTrivia.Count; i++)
+        {
+            SyntaxTrivia trivia = allTrivia[i];
+
+            if (
+                !trivia.IsKind(SyntaxKind.RegionDirectiveTrivia)
+                && !trivia.IsKind(SyntaxKind.EndRegionDirectiveTrivia)
+            )
+            {
+                continue;
+            }
+
+            // Find the start of the line (including indentation)
+            int lineStart = i;
+            while (lineStart > 0 && allTrivia[lineStart - 1].IsKind(SyntaxKind.WhitespaceTrivia))
+            {
+                lineStart--;
+            }
+
+            // Add all trivia from line start to the region directive
+            for (int j = lineStart; j <= i; j++)
+            {
+                triviaToRemove.Add(allTrivia[j]);
+            }
+
+            // Also remove the following end-of-line trivia if present
+            if (i + 1 < allTrivia.Count && allTrivia[i + 1].IsKind(SyntaxKind.EndOfLineTrivia))
+            {
+                triviaToRemove.Add(allTrivia[i + 1]);
+            }
+        }
+
+        if (!triviaToRemove.Any())
+            return node;
+
+        return node.ReplaceTrivia(triviaToRemove, (originalTrivia, rewrittenTrivia) => default);
+    }
+
     public static BaseNamespaceDeclarationSyntax ReplaceMember(
         this BaseNamespaceDeclarationSyntax subject,
         int index,

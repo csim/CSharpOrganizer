@@ -4,7 +4,6 @@ namespace Text.Namespace1; // namespace comment
 public class Class1
 {
     public bool _region1 = true;
-
     ///<summary>
     /// test1 summary
     ///</summary>

@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CSharply;
 
-public static partial class OrganizeService
+public partial class OrganizeService
 {
     private static CompilationUnitSyntax NormalizeBlankLines(CompilationUnitSyntax subject)
     {

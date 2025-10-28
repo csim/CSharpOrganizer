@@ -29,7 +29,7 @@ To install: `dotnet tool install csharply --global`
 ## Commands
 
 - `csharply.organize.file` - Organize the current C# file
-- `csharply.organize.folder` - Organize all C# files in the workspace
+- `csharply.organize.workspacefolders` - Organize C# files in all workspace folders
 
 ## License
 

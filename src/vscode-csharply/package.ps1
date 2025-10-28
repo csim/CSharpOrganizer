@@ -14,7 +14,8 @@ try {
 
     npm version $Version --no-git-tag-version
 
-    $out = "$PSScriptRoot/dist/csharply-v$($Version).vsix"
+    $outDir = Resolve-Path "$PSScriptRoot\..\..\artifacts"
+    $out = "$outDir\csharply-v$($Version).vsix"
     vsce package --out $out
 
     ""

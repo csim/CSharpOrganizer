@@ -45,43 +45,45 @@ public static class Program
             OrganizeResult result = service.Process(args[0]);
             TimeSpan duration = result.Duration;
 
-            string successContent = $"{result.SuccessFiles.Count:N0} organized";
-            string failContent = $"  {result.FailFiles.Count:N0} failed ";
-            string skipContent = $"  {result.SkipFiles.Count:N0} skipped";
             string durationContent =
-                duration.TotalMilliseconds < 1_000 ? $"  {duration.TotalMilliseconds:N0}ms"
-                : duration.TotalSeconds < 60 ? $"  {duration.TotalSeconds:N1}s"
-                : $"  {duration.TotalSeconds / 60d:N1} minutes";
+                duration.TotalMilliseconds < 1_000 ? $"{duration.TotalMilliseconds:N0}ms"
+                : duration.TotalSeconds < 60 ? $"{duration.TotalSeconds:N1}s"
+                : $"{duration.TotalSeconds / 60d:N1} minutes";
 
-            Write(successContent, foregroundColor: ConsoleColor.Green);
+            string successContent =
+                $"Organized {result.SuccessFiles.Count:N0} files in {durationContent}.";
+            string skipContent = $" {result.SkipFiles.Count:N0} files skipped";
+            string failContent = $" {result.FailFiles.Count:N0} files failed.";
+
+            Write(successContent);
 
             if (result.SkipFiles.Count > 0)
             {
-                Write(skipContent, foregroundColor: ConsoleColor.Yellow);
+                Write(skipContent);
             }
 
             if (result.FailFiles.Count > 0)
             {
-                Write(failContent, foregroundColor: ConsoleColor.Red);
+                Write(failContent);
             }
 
-            WriteLine($"  {durationContent}");
+            WriteLine();
 
             if (options.Verbose)
             {
                 foreach (string filePath in result.SuccessFiles)
                 {
-                    WriteLine($"organized : {filePath}", foregroundColor: ConsoleColor.Green);
+                    WriteLine($"organized : {filePath}");
                 }
 
                 foreach (string filePath in result.SkipFiles)
                 {
-                    WriteLine($"skipped   : {filePath}", foregroundColor: ConsoleColor.Yellow);
+                    WriteLine($"skipped   : {filePath}");
                 }
 
                 foreach (string filePath in result.FailFiles)
                 {
-                    WriteLine($"failed    : {filePath}", foregroundColor: ConsoleColor.Red);
+                    WriteLine($"failed    : {filePath}");
                 }
             }
 
@@ -107,57 +109,13 @@ public static class Program
         WriteLine("  csharply .");
     }
 
-    // private static void Write(string content)
-    // {
-    //     Write(content, foregroundColor: null, backgroundColor: null);
-    // }
-
-    private static void Write(string content, ConsoleColor? foregroundColor)
+    private static void Write(string content)
     {
-        Write(content, foregroundColor: foregroundColor, backgroundColor: null);
-    }
-
-    private static void Write(
-        string? content,
-        ConsoleColor? foregroundColor,
-        ConsoleColor? backgroundColor
-    )
-    {
-        if (foregroundColor != null)
-            Console.ForegroundColor = foregroundColor.Value;
-        if (backgroundColor != null)
-            Console.BackgroundColor = backgroundColor.Value;
-
         Console.Write(content);
-
-        if (foregroundColor != null || backgroundColor != null)
-            Console.ResetColor();
     }
 
     private static void WriteLine(string? content = null)
     {
-        WriteLine(content, foregroundColor: null, backgroundColor: null);
-    }
-
-    private static void WriteLine(string? content, ConsoleColor? foregroundColor)
-    {
-        WriteLine(content, foregroundColor: foregroundColor, backgroundColor: null);
-    }
-
-    private static void WriteLine(
-        string? content,
-        ConsoleColor? foregroundColor,
-        ConsoleColor? backgroundColor
-    )
-    {
-        if (foregroundColor != null)
-            Console.ForegroundColor = foregroundColor.Value;
-        if (backgroundColor != null)
-            Console.BackgroundColor = backgroundColor.Value;
-
         Console.WriteLine(content);
-
-        if (foregroundColor != null || backgroundColor != null)
-            Console.ResetColor();
     }
 }

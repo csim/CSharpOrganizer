@@ -73,8 +73,8 @@ public static class Program
               CSharply [command] [options]
 
             Options:
-              --version       Show version information
-              -?, -h, --help  Show help and usage information
+              --version          Show version information
+              -?, -h, --help     Show help and usage information
 
             Commands:
               organize <directoryOrFile>   Organize C# files.

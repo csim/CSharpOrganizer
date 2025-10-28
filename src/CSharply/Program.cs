@@ -43,6 +43,10 @@ public static class Program
         {
             return await ServeAsync(verbArgs);
         }
+        else if (verb == "daemon")
+        {
+            return await DaemonAsync(verbArgs);
+        }
         else
         {
             WriteLine($"Invalid verb: {verb}", ConsoleColor.Red);
@@ -51,6 +55,86 @@ public static class Program
 
             return 1;
         }
+    }
+
+    private static async Task<int> DaemonAsync(string[] args)
+    {
+        bool help = args.Contains("--help") || args.Contains("-h") || args.Contains("-?");
+
+        if (help)
+        {
+            DaemonHelp();
+            return 0;
+        }
+
+        try
+        {
+            // string pipeName =
+            //     args.FirstOrDefault(arg => arg.StartsWith("--pipe="))?[7..] ?? "CSharply";
+
+            string pipeName = "csharply";
+            WriteLine("Starting CSharply Daemon Service...", ConsoleColor.Green);
+
+            using DaemonService daemonService = new(pipeName);
+
+            // Handle Ctrl+C gracefully
+            using CancellationTokenSource cts = new();
+            Console.CancelKeyPress += (sender, e) =>
+            {
+                e.Cancel = true;
+                cts.Cancel();
+            };
+
+            // Start the daemon service in a background task
+            Task daemonTask = daemonService.StartAsync();
+
+            WriteLine("Daemon Service started successfully!", ConsoleColor.Green);
+            WriteLine($"Listening on named pipe: {pipeName}", ConsoleColor.Cyan);
+            WriteLine("Press Ctrl+C to stop the daemon.", ConsoleColor.Yellow);
+
+            // Wait for cancellation
+            try
+            {
+                await Task.Delay(Timeout.Infinite, cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                WriteLine("\nShutting down daemon service...", ConsoleColor.Yellow);
+            }
+
+            daemonService.Stop();
+            WriteLine("Daemon service stopped.", ConsoleColor.Green);
+
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            WriteLine($"Error starting daemon service: {ex.Message}", ConsoleColor.Red);
+            return 1;
+        }
+    }
+
+    private static void DaemonHelp()
+    {
+        string help = """
+            Start a daemon service for organizing C# code via named pipes.
+
+            Usage:
+              CSharply daemon [options]
+
+            Options:
+              --pipe=<name>            The named pipe name (default: CSharply)
+              -?, -h, --help           Show help and usage information.
+
+            Examples:
+              CSharply daemon
+              CSharply daemon --pipe=MyCSharplyPipe
+
+            Usage with named pipes:
+              echo "using System; class Test { }" | csharply-pipe CSharply
+            """;
+
+        WriteLine(help);
     }
 
     private static void DisplayHelp()
@@ -64,8 +148,9 @@ public static class Program
               -?, -h, --help     Show help and usage information
 
             Commands:
-              organize <directoryOrFile>   Organize C# files.
-              serve                       Start web server to organize code via HTTP.
+              organize <directoryOrFile>    Organize C# files.
+              serve                         Start web server to organize code via HTTP.
+              daemon                        Start daemon service to organize code via named pipes.
             """;
 
         WriteLine(help);

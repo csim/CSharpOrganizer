@@ -156,7 +156,7 @@ public static class Program
 
             foreach (string filePath in result.IgnoreFiles)
             {
-                WriteLine($"skipped   : {filePath}");
+                WriteLine($"ignored   : {filePath}");
             }
 
             foreach (string filePath in result.FailFiles)
@@ -175,15 +175,15 @@ public static class Program
               Organize C# files
 
             Usage:
-              CSharply organize <directoryOrFile> [options]
+              CSharply organize <DirectoryOrFile> [options]
 
             Arguments:
-              <directoryOrFile>  Paths to - a directory or file to be organized. Only .cs files are considered.
+              <DirectoryOrFile>        A directory or file to be organized. Only .cs files are considered.
 
             Options:
-              -s --simulate                  Display organized file content without saving files.
-              -v --verbose                   Display each file outcome.
-              -?, -h, --help                 Show help and usage information.
+              -s --simulate            Display organized file content without saving files.
+              -v --verbose             Display each file outcome.
+              -?, -h, --help           Show help and usage information.
             """;
 
         WriteLine(help);

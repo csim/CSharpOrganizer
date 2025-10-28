@@ -2,10 +2,11 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "csharply-file",
+      "label": "csharply-organize-file",
       "type": "process",
       "command": "csharply",
       "args": [
+        "organize",
         "${file}"
       ],
       "group": "none",
@@ -20,10 +21,11 @@
       "problemMatcher": []
     },
     {
-      "label": "csharply-folder",
+      "label": "csharply-organize-folder",
       "type": "process",
       "command": "csharply",
       "args": [
+        "organize",
         "${workspaceFolder}"
       ],
       "group": "none",

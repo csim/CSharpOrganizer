@@ -119,7 +119,6 @@ public static class Program
 
         OrganizeOptions options = new(Threads: 3, Debug: simulate, Verbose: verbose);
         OrganizeService service = new(options);
-
         OrganizeResult result = service.Process(args[0]);
         TimeSpan duration = result.Duration;
 
@@ -127,7 +126,6 @@ public static class Program
             duration.TotalMilliseconds < 1_000 ? $"{duration.TotalMilliseconds:N0}ms"
             : duration.TotalSeconds < 60 ? $"{duration.TotalSeconds:N1}s"
             : $"{duration.TotalSeconds / 60d:N1} minutes";
-
         string successContent =
             $"Organized {result.SuccessFiles.Count:N0} files in {durationContent}.";
         string ignoreContent = $" {result.IgnoreFiles.Count:N0} files ignored";

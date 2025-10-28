@@ -620,3 +620,6 @@ dotnet_diagnostic.IDE0305.severity = none
 
 # IDE0061: Use expression body for local function
 dotnet_diagnostic.IDE0061.severity = none
+
+# CA1308: Normalize strings to uppercase
+dotnet_diagnostic.CA1308.severity = none

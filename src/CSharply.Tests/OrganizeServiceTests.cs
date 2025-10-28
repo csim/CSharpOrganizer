@@ -595,7 +595,7 @@ public class OrganizeServiceTests(ITestOutputHelper output, bool debug = false)
         );
     }
 
-    private void Execute(string inputCode, string expectedCode, Options? options = null)
+    private void Execute(string inputCode, string expectedCode, OrganizeOptions? options = null)
     {
         bool success = false;
         IReadOnlyList<string> expectedLines = [];

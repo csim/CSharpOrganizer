@@ -10,16 +10,16 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CSharply;
 
-public partial class OrganizeService(IgnoreFileService ignoreService, Options options)
+public partial class OrganizeService(IgnoreFileService ignoreService, OrganizeOptions options)
 {
     private readonly List<string> _failFiles = [];
-    private readonly List<string> _skipFiles = [];
+    private readonly List<string> _ignoreFiles = [];
     private readonly List<string> _successFiles = [];
 
     public OrganizeService()
-        : this(new IgnoreFileService(), new Options()) { }
+        : this(new IgnoreFileService(), new OrganizeOptions()) { }
 
-    public OrganizeService(Options options)
+    public OrganizeService(OrganizeOptions options)
         : this(new IgnoreFileService(), options) { }
 
     public OrganizeResult Process(string path)
@@ -45,7 +45,7 @@ public partial class OrganizeService(IgnoreFileService ignoreService, Options op
         return new OrganizeResult(
             SuccessFiles: _successFiles,
             FailFiles: _failFiles,
-            SkipFiles: _skipFiles,
+            IgnoreFiles: _ignoreFiles,
             Duration: watch.Elapsed
         );
     }
@@ -58,11 +58,11 @@ public partial class OrganizeService(IgnoreFileService ignoreService, Options op
         }
     }
 
-    private void AddSkipFile(FileInfo file)
+    private void AddIgnoreFile(FileInfo file)
     {
-        lock (_skipFiles)
+        lock (_ignoreFiles)
         {
-            _skipFiles.Add(file.FullName);
+            _ignoreFiles.Add(file.FullName);
         }
     }
 
@@ -106,48 +106,21 @@ public partial class OrganizeService(IgnoreFileService ignoreService, Options op
     {
         if (ignoreService.Ignore(file))
         {
-            AddSkipFile(file);
+            AddIgnoreFile(file);
 
             return;
         }
 
         if (!file.Extension.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
         {
-            AddSkipFile(file);
+            AddIgnoreFile(file);
 
             return;
         }
 
-        // if (
-        //     file.Name.Contains("Utils.cs")
-        //     || file.Name == "DateTimeFormat.cs"
-        //     || file.Name == "Heuristics.cs"
-        //     || file.Name == "TypeResolver.cs"
-        //     || file.Name == "BenchmarkCase.cs"
-        //     || file.Name == "SupportedExcelFeatures.cs"
-        //     || file.Name == "TableFuzzer.cs"
-        // )
-        // {
-        //     AddSkipFile(file);
-
-        //     return;
-        // }
-
         try
         {
             string fileContent = File.ReadAllText(file.FullName);
-
-            // if (
-            //     fileContent.Contains("#if")
-            //     || fileContent.Contains("#endif")
-            //     || fileContent.Contains("#nullable")
-            // )
-            // {
-            //     AddSkipFile(file);
-
-            //     return;
-            // }
-
             string organizedContent = OrganizeCode(fileContent);
 
             if (!options.Debug)
@@ -184,11 +157,11 @@ public partial class OrganizeService(IgnoreFileService ignoreService, Options op
     }
 }
 
-public record Options(int Threads = 1, bool Verbose = false, bool Debug = false);
+public record OrganizeOptions(int Threads = 1, bool Verbose = false, bool Debug = false);
 
 public record OrganizeResult(
     IReadOnlyList<string> SuccessFiles,
     IReadOnlyList<string> FailFiles,
-    IReadOnlyList<string> SkipFiles,
+    IReadOnlyList<string> IgnoreFiles,
     TimeSpan Duration
 );

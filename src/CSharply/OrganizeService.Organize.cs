@@ -33,7 +33,7 @@ public partial class OrganizeService
 
     private static CompilationUnitSyntax Organize(CompilationUnitSyntax subject)
     {
-        subject = subject.WithMembers(OrganizeMembers(subject.Members)).RemoveRegions();
+        subject = subject.WithMembers(OrganizeMembers(subject.Members));
 
         if (subject.Usings.Count > 0)
         {
@@ -47,7 +47,7 @@ public partial class OrganizeService
 
     private static BaseNamespaceDeclarationSyntax Organize(BaseNamespaceDeclarationSyntax subject)
     {
-        subject = subject.WithMembers(OrganizeMembers(subject.Members)).RemoveRegions();
+        subject = subject.WithMembers(OrganizeMembers(subject.Members));
 
         List<MemberDeclarationSyntax> members = subject.Members.ToList();
 
@@ -104,7 +104,7 @@ public partial class OrganizeService
 
     private static InterfaceDeclarationSyntax Organize(InterfaceDeclarationSyntax subject)
     {
-        subject = subject.WithMembers(OrganizeMembers(subject.Members)).RemoveRegions();
+        subject = subject.WithMembers(OrganizeMembers(subject.Members));
 
         if (subject.Members.Count > 0)
         {
@@ -136,7 +136,7 @@ public partial class OrganizeService
 
     private static ClassDeclarationSyntax Organize(ClassDeclarationSyntax subject)
     {
-        subject = subject.WithMembers(OrganizeMembers(subject.Members)).RemoveRegions();
+        subject = subject.WithMembers(OrganizeMembers(subject.Members));
 
         subject = subject.WithOpenBraceToken(
             subject.OpenBraceToken.WithoutTrailingBlankLineTrivia()

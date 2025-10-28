@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace CSharply.Tests;
 
-public class OrganizeServiceTests(ITestOutputHelper output, bool debug = true)
+public class OrganizeServiceTests(ITestOutputHelper output, bool debug = false)
 {
     [Fact]
     public void OrganizeCode_Simple_001()
@@ -185,6 +185,7 @@ public class OrganizeServiceTests(ITestOutputHelper output, bool debug = true)
             """
             namespace TestNamespace
             {
+
                 public class TestClass
                 {
                     #region Private Fields
@@ -202,20 +203,27 @@ public class OrganizeServiceTests(ITestOutputHelper output, bool debug = true)
                     #endregion
                 }
             }
+
+
             """,
             """
             namespace TestNamespace
             {
                 public class TestClass
                 {
+                    #region Private Fields
                     private int _id;
                     private string _name;
+                    #endregion
 
+                    #region Properties
                     public int Id { get; set; }
-
                     public string Name { get; set; }
+                    #endregion
 
+                    #region Methods
                     public void DoSomething() { }
+                    #endregion
                 }
             }
 
@@ -587,7 +595,7 @@ public class OrganizeServiceTests(ITestOutputHelper output, bool debug = true)
         );
     }
 
-    private void Execute(string inputCode, string expectedCode)
+    private void Execute(string inputCode, string expectedCode, Options? options = null)
     {
         bool success = false;
         IReadOnlyList<string> expectedLines = [];
@@ -597,6 +605,7 @@ public class OrganizeServiceTests(ITestOutputHelper output, bool debug = true)
 
         try
         {
+            options ??= new();
             actualCode = OrganizeService.OrganizeCode(inputCode);
             actualContent = actualCode;
 
@@ -614,41 +623,36 @@ public class OrganizeServiceTests(ITestOutputHelper output, bool debug = true)
         {
             if (debug || !success)
             {
-                TextListBuilder actualLineList = TextListBuilder.Create();
+                ITextRowBuilder table = TextTableBuilder
+                    .Create()
+                    .AddIdentityColumn()
+                    .AddColumn(nameof(expectedCode))
+                    .AddBorderColumn()
+                    .AddColumn()
+                    .AddColumn(nameof(actualCode))
+                    .AddHeadingRow()
+                    .AddBorderRow();
 
-                for (int i = 0; i < actualLines.Count; i++)
+                int maxIndex = Math.Max(expectedLines.Count, actualLines.Count);
+
+                for (int i = 0; i < maxIndex; i++)
                 {
-                    string indicator =
-                        i >= expectedLines.Count ? "x "
-                        : expectedLines[i] == actualLines[i] ? "  "
-                        : "x ";
+                    string expectedLine = i < expectedLines.Count ? expectedLines[i] : string.Empty;
+                    string actualLine = i < actualLines.Count ? actualLines[i] : string.Empty;
 
-                    actualLineList.AddItem(
-                        id: string.Empty,
-                        separator: "|",
-                        indicator: indicator,
-                        body: actualLines[i]
-                    );
+                    string indicator = expectedLine.Equals(actualLine, StringComparison.Ordinal)
+                        ? string.Empty
+                        : "x";
+
+                    table.AddDataRow(expectedLine, indicator, actualLine);
                 }
 
-                actualContent = actualLineList.Render();
-
-                WriteLine(
-                    TextTableBuilder
-                        .Create()
-                        .AddColumn("expected")
-                        .AddBorderColumn()
-                        .AddColumn("actual")
-                        .AddHeadingRow()
-                        .AddBorderRow()
-                        .AddDataRow(expectedCode.Lines().RenderNumbered(), actualContent)
-                        .Render()
-                );
+                WriteLine(table.Render());
 
                 WriteLine(
                     $"""
-                    inputCode:
-                    {inputCode.Lines().RenderNumbered()}
+                    {nameof(inputCode)}:
+                    {inputCode.Lines().RenderNumbered(separator: string.Empty)}
                     """
                 );
             }

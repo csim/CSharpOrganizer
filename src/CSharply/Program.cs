@@ -7,7 +7,7 @@ namespace CSharply;
 
 public static class Program
 {
-    public static int Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
         bool version = args.Contains("--version");
         if (version)
@@ -39,6 +39,10 @@ public static class Program
         {
             return Organize(verbArgs);
         }
+        else if (verb == "serve")
+        {
+            return await ServeAsync(verbArgs);
+        }
         else
         {
             WriteLine($"Invalid verb: {verb}", ConsoleColor.Red);
@@ -61,6 +65,7 @@ public static class Program
 
             Commands:
               organize <directoryOrFile>   Organize C# files.
+              serve                       Start web server to organize code via HTTP.
             """;
 
         WriteLine(help);
@@ -165,6 +170,76 @@ public static class Program
               -s --simulate            Display organized file content without saving files.
               -v --verbose             Display outcome for each file.
               -?, -h, --help           Show help and usage information.
+            """;
+
+        WriteLine(help);
+    }
+
+    private static int ParseIntArg(string[] args, string argName, int defaultValue)
+    {
+        for (int i = 0; i < args.Length - 1; i++)
+        {
+            if (args[i] == argName && int.TryParse(args[i + 1], out int parsedValue))
+            {
+                return parsedValue;
+            }
+        }
+
+        return defaultValue;
+    }
+
+    private static async Task<int> ServeAsync(string[] args)
+    {
+        bool help = args.Contains("--help") || args.Contains("-h") || args.Contains("-?");
+
+        if (help)
+        {
+            ServeHelp();
+            return 0;
+        }
+
+        try
+        {
+            int port = ParseIntArg(args, "--port", 8147);
+
+            WriteLine("Starting CSharply Web Server...", ConsoleColor.Green);
+
+            ServeService webServer = new(port);
+
+            WriteLine("Web Server started successfully!", ConsoleColor.Green);
+            WriteLine($"Available at: http://localhost:{port}", ConsoleColor.Cyan);
+            WriteLine("Press Ctrl+C to stop the server.", ConsoleColor.Yellow);
+
+            await webServer.RunAsync();
+
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            WriteLine($"Error starting web server: {ex.Message}", ConsoleColor.Red);
+            return 1;
+        }
+    }
+
+    private static void ServeHelp()
+    {
+        string help = """
+            Start a web server for organizing C# code via HTTP API.
+
+            Usage:
+              CSharply serve [options]
+
+            Options:
+              --port <port>            The port to listen on (default: 8147)
+              -?, -h, --help           Show help and usage information.
+
+            Examples:
+              CSharply serve
+              CSharply serve --port 8080
+
+            API Endpoints:
+              GET  /health             Health check
+              POST /organize           Organize C# code (plain text body)
             """;
 
         WriteLine(help);

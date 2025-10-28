@@ -9,30 +9,6 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        //args = [@"C:\src\koalas\src\Koalas\Text\TextFieldSetItemBuilder.cs"];
-        //args = [@"C:\src\koalas\src\Koalas\Text\"];
-        //args = [@"C:\prose_wip\tformula\Transformation.Formula\"];
-        // args =
-        // [
-        //     @"C:\prose_wip\tformula\Transformation.Formula\Semantics\Learning\Conditionals\PredicateFirst\Models\Cluster.cs",
-        // ];
-
-        // args =
-        // [
-        //     @"C:\prose_wip\tformula\Transformation.Formula\Semantics\Extensions\IProgramNodeBuilder.Extension.cs",
-        // ];
-        //args = [@"C:\src\CSharply\.scratch\test.cs"];
-        //args = [@"C:\src\CSharply\.scratch\test.cs"];
-        //args = [@"C:\src\CSharply\.scratch\test2.cs"];
-        //_debug = true;
-
-        string? verb = null;
-        if (args.Length > 0)
-        {
-            string iverb = args[0].ToLowerInvariant();
-            verb = !iverb.StartsWith('-') ? iverb : null;
-        }
-
         bool version = args.Contains("--version");
         if (version)
         {
@@ -41,6 +17,13 @@ public static class Program
             WriteLine($"CSharply v{versionNumber}");
 
             return 0;
+        }
+
+        string? verb = null;
+        if (args.Length > 0)
+        {
+            string iverb = args[0].ToLowerInvariant();
+            verb = !iverb.StartsWith('-') ? iverb : null;
         }
 
         if (verb == null)
@@ -180,7 +163,7 @@ public static class Program
 
             Options:
               -s --simulate            Display organized file content without saving files.
-              -v --verbose             Display each file outcome.
+              -v --verbose             Display outcome for each file.
               -?, -h, --help           Show help and usage information.
             """;
 

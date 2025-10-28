@@ -40,7 +40,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   organizeFolderCommand = vscode.commands.registerCommand(
-    "csharply.organize.folder",
+    "csharply.organize.workspacefolders",
     async () => {
       const folders = vscode.workspace.workspaceFolders;
 

@@ -2,7 +2,7 @@
   "name": "csharply",
   "displayName": "CSharply",
   "description": "C# file organizer",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "csim",
   "author": "Clint Simon",
   "license": "MIT",
@@ -25,8 +25,8 @@
         "title": "CSharply: Organize File"
       },
       {
-        "command": "csharply.organize.folder",
-        "title": "CSharply: Organize Folder"
+        "command": "csharply.organize.workspacefolders",
+        "title": "CSharply: Organize Workspace Folders"
       }
     ]
   },

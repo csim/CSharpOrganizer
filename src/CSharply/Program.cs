@@ -143,14 +143,14 @@ public static class Program
             Usage:
               CSharply [command] [options]
 
-            Options:
-              --version          Show version information
-              -?, -h, --help     Show help and usage information
-
             Commands:
               organize <directoryOrFile>    Organize C# files.
               serve                         Start web server to organize code via HTTP.
               daemon                        Start daemon service to organize code via named pipes.
+
+            Options:
+              --version          Show version information
+              -?, -h, --help     Show help and usage information
             """;
 
         WriteLine(help);

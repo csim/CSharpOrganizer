@@ -19,17 +19,17 @@ To install: `dotnet tool install csharply --global`
 ### Organize Current File
 1. Open a C# file (.cs)
 2. Open Command Palette (`Ctrl+Shift+P`)
-3. Run "CSharply: Organize File"
+3. Run "CSharply: Organize C# File"
 
 ### Organize Workspace Folder
 1. Open a workspace/folder containing C# files
 2. Open Command Palette (`Ctrl+Shift+P`)
-3. Run "CSharply: Organize Folder"
+3. Run "CSharply: Organize all C# files in workspace folders"
 
 ## Commands
 
-- `csharply.organize.file` - Organize the current C# file
-- `csharply.organize.workspacefolders` - Organize C# files in all workspace folders
+- `csharply.organize.file` - Organize open C# file
+- `csharply.organize.workspacefolders` - Organize all C# files in workspace folders
 
 ## License
 

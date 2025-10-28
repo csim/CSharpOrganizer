@@ -1,158 +1,97 @@
 import * as vscode from "vscode";
-import * as cp from "child_process";
-import * as path from "path";
-import * as fs from "fs";
+import { exec } from "child_process";
+
+let organizeFileCommand: vscode.Disposable | undefined;
+let organizeFolderCommand: vscode.Disposable | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log("CSharply extension is now active!");
+  //console.log('Congratulations, your extension "csharply" is now active!');
 
-  // Register organize command
-  let organizeDisposable = vscode.commands.registerCommand(
-    "csharply.organize",
-    async (uri: vscode.Uri) => {
-      const targetUri = uri || vscode.window.activeTextEditor?.document.uri;
-      if (targetUri) {
-        await organizeFile(targetUri);
+  organizeFileCommand = vscode.commands.registerCommand(
+    "csharply.organize.file",
+    async () => {
+      const activeEditor = vscode.window.activeTextEditor;
+
+      if (!activeEditor) {
+        vscode.window.showErrorMessage("No active file to organize");
+        return;
+      }
+
+      const path = activeEditor.document.uri.fsPath;
+      if (!path.endsWith(".cs")) {
+        // vscode.window.showWarningMessage(
+        //   "CSharply can only organize C# files (.cs)"
+        // );
+        return;
+      }
+
+      // Save the current file before processing (only if modified)
+      if (activeEditor.document.isDirty) {
+        try {
+          await activeEditor.document.save();
+        } catch (saveError) {
+          vscode.window.showErrorMessage(`Failed to save file: ${saveError}`);
+          return;
+        }
+      }
+
+      await organize(path, false);
+    }
+  );
+
+  organizeFolderCommand = vscode.commands.registerCommand(
+    "csharply.organize.folder",
+    async () => {
+      const folders = vscode.workspace.workspaceFolders;
+
+      if (!folders || folders.length === 0) {
+        vscode.window.showErrorMessage("CSharply: No workspace(s) available.");
+        return;
+      }
+
+      for (const folder of folders) {
+        await organize(folder.uri.fsPath, true);
       }
     }
   );
 
-  // Register organize all command
-  let organizeAllDisposable = vscode.commands.registerCommand(
-    "csharply.organizeAll",
-    async (uri: vscode.Uri) => {
-      if (uri) {
-        await organizeDirectory(uri);
-      }
-    }
-  );
-
-  // Register on save handler
-  let onSaveDisposable = vscode.workspace.onDidSaveTextDocument(
-    async (document) => {
-      const config = vscode.workspace.getConfiguration("csharply");
-      const organizeOnSave = config.get<boolean>("organizeOnSave", false);
-
-      if (
-        organizeOnSave &&
-        document.languageId === "csharp" &&
-        document.uri.scheme === "file"
-      ) {
-        await organizeFile(document.uri);
-      }
-    }
-  );
-
-  context.subscriptions.push(
-    organizeDisposable,
-    organizeAllDisposable,
-    onSaveDisposable
-  );
+  context.subscriptions.push(organizeFileCommand);
+  context.subscriptions.push(organizeFolderCommand);
 }
 
-async function organizeFile(uri: vscode.Uri): Promise<void> {
-  if (!uri || uri.scheme !== "file") {
-    vscode.window.showErrorMessage("Invalid file path");
-    return;
-  }
+async function organize(path: string, displayInfo: boolean): Promise<void> {
+  const command = `csharply.exe organize "${path}"`;
 
-  const filePath = uri.fsPath;
-  if (!filePath.endsWith(".cs")) {
-    vscode.window.showWarningMessage("Only C# files can be organized");
-    return;
-  }
-
-  const config = vscode.workspace.getConfiguration("csharply");
-  const executablePath = config.get<string>("executablePath", "csharply");
-
-  try {
-    await vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: "Organizing C# file...",
-        cancellable: false,
-      },
-      async () => {
-        await organize(executablePath, filePath);
-      }
-    );
-
-    vscode.window.showInformationMessage(
-      `Organized: ${path.basename(filePath)}`
-    );
-
-    // Refresh the file in the editor
-    const document = await vscode.workspace.openTextDocument(uri);
-    if (vscode.window.activeTextEditor?.document === document) {
-      await vscode.commands.executeCommand("workbench.action.files.revert");
-    }
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-    vscode.window.showErrorMessage(`Failed to organize file: ${errorMessage}`);
-  }
-}
-
-async function organizeDirectory(uri: vscode.Uri): Promise<void> {
-  const config = vscode.workspace.getConfiguration("csharply");
-  const executablePath = config.get<string>("executablePath", "csharply");
-
-  try {
-    const result = await vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: "Organizing C# files in directory...",
-        cancellable: false,
-      },
-      async () => {
-        return await organize(executablePath, uri.fsPath);
-      }
-    );
-
-    vscode.window.showInformationMessage(
-      `Organized C# files in: ${path.basename(uri.fsPath)}`
-    );
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-    vscode.window.showErrorMessage(
-      `Failed to organize directory: ${errorMessage}`
-    );
-  }
-}
-
-function organize(executablePath: string, targetPath: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const args = [targetPath];
-
-    const process = cp.spawn(executablePath, args, {
-      cwd: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath,
-      shell: true,
-    });
-
-    let stdout = "";
-    let stderr = "";
-
-    process.stdout?.on("data", (data) => {
-      stdout += data.toString();
-    });
-
-    process.stderr?.on("data", (data) => {
-      stderr += data.toString();
-    });
-
-    process.on("close", (code) => {
-      if (code === 0) {
-        resolve(stdout);
-      } else {
-        reject(new Error(`Process exited with code ${code}: ${stderr}`));
+    exec(command, async (error, stdout, stderr) => {
+      if (error) {
+        vscode.window.showErrorMessage(`CSharply error: ${error.message}`);
+        reject(error);
+        return;
       }
-    });
 
-    process.on("error", (error) => {
-      reject(new Error(`Failed to start process: ${error.message}`));
+      if (stderr) {
+        vscode.window.showWarningMessage(`CSharply error: ${stderr}`);
+      }
+
+      if (displayInfo) {
+        vscode.window.showInformationMessage(
+          stdout ? `CSharply: ${stdout.trim()}` : "CSharply: Done."
+        );
+      }
+
+      resolve();
     });
   });
 }
 
-export function deactivate() {}
+export function deactivate() {
+  if (organizeFileCommand) {
+    organizeFileCommand.dispose();
+    organizeFileCommand = undefined;
+  }
+  if (organizeFolderCommand) {
+    organizeFolderCommand.dispose();
+    organizeFolderCommand = undefined;
+  }
+}

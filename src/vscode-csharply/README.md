@@ -1,15 +1,18 @@
 # CSharply
 
-A Visual Studio Code extension for organizing C# files using the CSharply tool.
+A Visual Studio Code extension for organizing C# files using the CSharply dotnet tool.
 
 ## Features
 
-- **Organize File**: Organize the currently active C# file
-- **Organize Folder**: Organize all C# files in the current workspace
+- **Organize File**: Organize the currently active C# file.
+ 
+- **Organize Folder**: Organize all C# files in the current workspace folders.
 
 ## Requirements
 
-- CSharply.exe must be installed and available in your system PATH. Install: `dotnet tool install csharply --global`  
+The CSharply dotnet tool must be installed and available in your system PATH. 
+
+To install: `dotnet tool install csharply --global`  
 
 ## Usage
 
@@ -27,12 +30,6 @@ A Visual Studio Code extension for organizing C# files using the CSharply tool.
 
 - `csharply.organize.file` - Organize the current C# file
 - `csharply.organize.folder` - Organize all C# files in the workspace
-
-## Release Notes
-
-### 0.0.1
-
-Initial release of CSharply extension.
 
 ## License
 

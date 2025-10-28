@@ -33,7 +33,7 @@ public partial class OrganizeService
 
     private static CompilationUnitSyntax Organize(CompilationUnitSyntax subject)
     {
-        subject = subject.RemoveRegions().WithMembers(OrganizeMembers(subject.Members));
+        subject = subject.WithMembers(OrganizeMembers(subject.Members)).RemoveRegions();
 
         if (subject.Usings.Count > 0)
         {
@@ -47,8 +47,7 @@ public partial class OrganizeService
 
     private static BaseNamespaceDeclarationSyntax Organize(BaseNamespaceDeclarationSyntax subject)
     {
-        subject = subject.WithMembers(OrganizeMembers(subject.Members));
-        subject = subject.RemoveRegions();
+        subject = subject.WithMembers(OrganizeMembers(subject.Members)).RemoveRegions();
 
         List<MemberDeclarationSyntax> members = subject.Members.ToList();
 
@@ -79,7 +78,7 @@ public partial class OrganizeService
         SyntaxList<UsingDirectiveSyntax> subjectUsings
     )
     {
-        if (subjectUsings.Count == 0)
+        if (subjectUsings.HasPreProcessorDirective())
         {
             return subjectUsings;
         }
@@ -137,7 +136,7 @@ public partial class OrganizeService
 
     private static ClassDeclarationSyntax Organize(ClassDeclarationSyntax subject)
     {
-        subject = subject.RemoveRegions().WithMembers(OrganizeMembers(subject.Members));
+        subject = subject.WithMembers(OrganizeMembers(subject.Members)).RemoveRegions();
 
         subject = subject.WithOpenBraceToken(
             subject.OpenBraceToken.WithoutTrailingBlankLineTrivia()
@@ -164,6 +163,11 @@ public partial class OrganizeService
         SyntaxList<MemberDeclarationSyntax> subjectMembers
     )
     {
+        if (subjectMembers.HasPreProcessorDirective())
+        {
+            return subjectMembers;
+        }
+
         List<MemberDeclarationSyntax> members = subjectMembers.ToList();
 
         List<BaseNamespaceDeclarationSyntax> namespaces = members

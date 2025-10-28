@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace CSharply.Tests;
 
-public class OrganizeServiceTests(ITestOutputHelper output, bool debug = false)
+public class OrganizeServiceTests(ITestOutputHelper output, bool debug = true)
 {
     [Fact]
     public void OrganizeCode_Simple_001()
@@ -485,7 +485,7 @@ public class OrganizeServiceTests(ITestOutputHelper output, bool debug = false)
     }
 
     [Fact]
-    public void OrganizeCode_Simple_020_WithIfDef()
+    public void OrganizeCode_Simple_020_PreProcessor()
     {
         Execute(
             """
@@ -495,6 +495,11 @@ public class OrganizeServiceTests(ITestOutputHelper output, bool debug = false)
             using System.Linq;
             using System.Reflection;
             using Basic.Reference.Assemblies;
+
+            #if !CORECLR
+            using System.Text.RegularExpressions;
+            #endif
+
             using Microsoft.ProgramSynthesis.Utils.JetBrains.Annotations;
             using Microsoft.CodeAnalysis;
             using Microsoft.CodeAnalysis.CSharp;
@@ -506,51 +511,76 @@ public class OrganizeServiceTests(ITestOutputHelper output, bool debug = false)
             using System.IO;
 
 
+
+            namespace TestNamespace;
+            public class TestClass
+            {
+                public int Id { get; set; }
+                public string Name { get; set; }
+
+                private int _id2;
+                private int _id1;
+
+                public void DoSomething() { }
+
+                #if DEBUG
+                private int _idDebug;
+                private string _nameDebug;
+                #endif
+
+                public bool Method2() {}
+
+                public bool Method1() {}
+
+                private int _id;
+                private string _name;
+            }
+            """,
+            """
+            using System;
+            using System.Collections.Generic;
+            using System.Globalization;
+            using System.Linq;
+            using System.Reflection;
+            using Basic.Reference.Assemblies;
+
             #if !CORECLR
             using System.Text.RegularExpressions;
             #endif
 
+            using Microsoft.ProgramSynthesis.Utils.JetBrains.Annotations;
+            using Microsoft.CodeAnalysis;
+            using Microsoft.CodeAnalysis.CSharp;
+            using Microsoft.CodeAnalysis.CSharp.Syntax;
+            using Microsoft.ProgramSynthesis.Utils;
+            using Microsoft.ProgramSynthesis.Utils.Caching;
+            using static System.FormattableString;
+            using System.Diagnostics;
+            using System.IO;
+
             namespace TestNamespace;
-                public class TestClass
-                {
-                    public int Id { get; set; }
-                    public string Name { get; set; }
 
-                    private int _id2;
-                    private int _id1;
-
-                    public void DoSomething() { }
-
-                    #if DEBUG
-                    private int _id;
-                    private string _name;
-                    #endif
-
-                    public bool Method2() {}
-
-                    public bool Method1() {}
-
-                    #nullable enable
-                    private int _id;
-                    private string _name;
-                    #nullable restore
-                }
-            }
-            """,
-            """
-            namespace TestNamespace
+            public class TestClass
             {
-                public class TestClass
-                {
-                    private int _id;
-                    private string _name;
+                public int Id { get; set; }
+                public string Name { get; set; }
 
-                    public int Id { get; set; }
+                private int _id2;
+                private int _id1;
 
-                    public string Name { get; set; }
+                public void DoSomething() { }
 
-                    public void DoSomething() { }
-                }
+                #if DEBUG
+                private int _idDebug;
+                private string _nameDebug;
+                #endif
+
+                public bool Method2() {}
+
+                public bool Method1() {}
+
+                private int _id;
+                private string _name;
             }
 
             """

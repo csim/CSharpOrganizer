@@ -5,6 +5,126 @@ namespace CSharply;
 public static class SyntaxExtensions
 {
     private static readonly SyntaxTrivia _lineEnding = SyntaxFactory.CarriageReturnLineFeed;
+    private static readonly HashSet<SyntaxKind> _preProcessorDirectives = new(
+        [
+            SyntaxKind.IfDirectiveTrivia,
+            SyntaxKind.ElifDirectiveTrivia,
+            SyntaxKind.ElseDirectiveTrivia,
+            SyntaxKind.EndIfDirectiveTrivia,
+            SyntaxKind.DefineDirectiveTrivia,
+            SyntaxKind.UndefDirectiveTrivia,
+            SyntaxKind.WarningDirectiveTrivia,
+            SyntaxKind.ErrorDirectiveTrivia,
+            //SyntaxKind.RegionDirectiveTrivia,
+            //SyntaxKind.EndRegionDirectiveTrivia,
+            SyntaxKind.LineDirectiveTrivia,
+            SyntaxKind.LineSpanDirectiveTrivia,
+            SyntaxKind.PragmaWarningDirectiveTrivia,
+            SyntaxKind.PragmaChecksumDirectiveTrivia,
+            SyntaxKind.ReferenceDirectiveTrivia,
+            SyntaxKind.LoadDirectiveTrivia,
+            SyntaxKind.NullableDirectiveTrivia,
+            SyntaxKind.BadDirectiveTrivia,
+        ]
+    );
+
+    public static bool HasPreProcessorDirective(this IEnumerable<UsingDirectiveSyntax> usings)
+    {
+        foreach (UsingDirectiveSyntax usingDirective in usings)
+        {
+            // Check leading trivia
+            if (
+                usingDirective
+                    .GetLeadingTrivia()
+                    .Any(trivia =>
+                        trivia.IsKind(SyntaxKind.IfDirectiveTrivia)
+                        || trivia.IsKind(SyntaxKind.NullableDirectiveTrivia)
+                    )
+            )
+            {
+                return true;
+            }
+
+            // Check trailing trivia
+            if (
+                usingDirective
+                    .GetTrailingTrivia()
+                    .Any(trivia =>
+                        trivia.IsKind(SyntaxKind.IfDirectiveTrivia)
+                        || trivia.IsKind(SyntaxKind.NullableDirectiveTrivia)
+                    )
+            )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static bool HasPreProcessorDirective(this CompilationUnitSyntax root)
+    {
+        IEnumerable<SyntaxNode> descendents = root.DescendantNodes();
+
+        foreach (SyntaxNode descendent in descendents)
+        {
+            // Check leading trivia
+            if (
+                descendent
+                    .GetLeadingTrivia()
+                    .Any(trivia =>
+                        trivia.IsKind(SyntaxKind.IfDirectiveTrivia)
+                        || trivia.IsKind(SyntaxKind.NullableDirectiveTrivia)
+                    )
+            )
+            {
+                return true;
+            }
+
+            // Check trailing trivia
+            if (
+                descendent
+                    .GetTrailingTrivia()
+                    .Any(trivia =>
+                        trivia.IsKind(SyntaxKind.IfDirectiveTrivia)
+                        || trivia.IsKind(SyntaxKind.NullableDirectiveTrivia)
+                    )
+            )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static bool HasPreProcessorDirective(this IEnumerable<MemberDeclarationSyntax> members)
+    {
+        foreach (MemberDeclarationSyntax member in members)
+        {
+            // Check leading trivia
+            if (
+                member
+                    .GetLeadingTrivia()
+                    .Any(trivia => _preProcessorDirectives.Contains(trivia.Kind()))
+            )
+            {
+                return true;
+            }
+
+            // Check trailing trivia
+            if (
+                member
+                    .GetTrailingTrivia()
+                    .Any(trivia => _preProcessorDirectives.Contains(trivia.Kind()))
+            )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     public static T RemoveRegions<T>(this T node)
         where T : SyntaxNode

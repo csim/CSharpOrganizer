@@ -117,6 +117,9 @@ public partial class OrganizeService
 
     private static FieldDeclarationSyntax Organize(FieldDeclarationSyntax subject)
     {
+        Console.WriteLine("------------------------------------------------");
+        Console.WriteLine(subject.Declaration.Variables.First().Identifier.Text);
+
         return subject.WithoutBlankLineTrivia();
     }
 

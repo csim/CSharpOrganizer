@@ -484,6 +484,79 @@ public class OrganizeServiceTests(ITestOutputHelper output, bool debug = false)
         );
     }
 
+    [Fact]
+    public void OrganizeCode_Simple_020_WithIfDef()
+    {
+        Execute(
+            """
+            using System;
+            using System.Collections.Generic;
+            using System.Globalization;
+            using System.Linq;
+            using System.Reflection;
+            using Basic.Reference.Assemblies;
+            using Microsoft.ProgramSynthesis.Utils.JetBrains.Annotations;
+            using Microsoft.CodeAnalysis;
+            using Microsoft.CodeAnalysis.CSharp;
+            using Microsoft.CodeAnalysis.CSharp.Syntax;
+            using Microsoft.ProgramSynthesis.Utils;
+            using Microsoft.ProgramSynthesis.Utils.Caching;
+            using static System.FormattableString;
+            using System.Diagnostics;
+            using System.IO;
+
+
+            #if !CORECLR
+            using System.Text.RegularExpressions;
+            #endif
+
+            namespace TestNamespace;
+                public class TestClass
+                {
+                    public int Id { get; set; }
+                    public string Name { get; set; }
+
+                    private int _id2;
+                    private int _id1;
+
+                    public void DoSomething() { }
+
+                    #if DEBUG
+                    private int _id;
+                    private string _name;
+                    #endif
+
+                    public bool Method2() {}
+
+                    public bool Method1() {}
+
+                    #nullable enable
+                    private int _id;
+                    private string _name;
+                    #nullable restore
+                }
+            }
+            """,
+            """
+            namespace TestNamespace
+            {
+                public class TestClass
+                {
+                    private int _id;
+                    private string _name;
+
+                    public int Id { get; set; }
+
+                    public string Name { get; set; }
+
+                    public void DoSomething() { }
+                }
+            }
+
+            """
+        );
+    }
+
     private void Execute(string inputCode, string expectedCode)
     {
         bool success = false;

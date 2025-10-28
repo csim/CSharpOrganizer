@@ -53,13 +53,13 @@ public class IgnoreFileService
             triedDirectories.ForEach(d => _globCache[d.FullName] = info);
             triedDirectories.Clear();
 
-            //Console.WriteLine($"new: {file.Directory}");
-
             return _globCache[file.Directory!.FullName] = info;
         }
 
         if (directory.Parent == null)
             return _globCache[directory.FullName] = new(Directory: directory, Globs: []);
+
+        triedDirectories.Add(directory);
 
         return GetIgnoreInfo(directory.Parent, triedDirectories);
     }

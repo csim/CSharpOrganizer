@@ -58,7 +58,7 @@ public static class Program
         }
         else
         {
-            WriteLine($"Invalid verb: {verb}");
+            WriteLine($"Invalid verb: {verb}", ConsoleColor.Red);
             WriteLine();
             DisplayHelp();
 
@@ -99,7 +99,7 @@ public static class Program
         string? path = args.ElementAtOrDefault(0);
         if (path == null)
         {
-            WriteLine($"No path given.");
+            WriteLine($"No path given.", ConsoleColor.Red);
             WriteLine();
             OrganizeHelp();
 
@@ -110,7 +110,7 @@ public static class Program
         FileInfo file = new(path);
         if (!directory.Exists && !file.Exists)
         {
-            WriteLine($"Invalid path: {path}");
+            WriteLine($"Invalid path: {path}", ConsoleColor.Red);
             WriteLine();
             OrganizeHelp();
 
@@ -171,19 +171,19 @@ public static class Program
     private static void OrganizeHelp()
     {
         string help = """
-             Description:
-               Organize C# files
+            Description:
+              Organize C# files
 
-             Usage:
-               CSharply organize <directoryOrFile> [options]
+            Usage:
+              CSharply organize <directoryOrFile> [options]
 
-             Arguments:
-               <directoryOrFile>  Paths to - a directory or file to be organized. Only .cs files are considered.
+            Arguments:
+              <directoryOrFile>  Paths to - a directory or file to be organized. Only .cs files are considered.
 
-             Options:
-               -s --simulate                  Display organized file content without saving files.
-               -v --verbose                   Display each file outcome.
-               -?, -h, --help                 Show help and usage information.
+            Options:
+              -s --simulate                  Display organized file content without saving files.
+              -v --verbose                   Display each file outcome.
+              -?, -h, --help                 Show help and usage information.
             """;
 
         WriteLine(help);
@@ -194,8 +194,14 @@ public static class Program
         Console.Write(content);
     }
 
-    private static void WriteLine(string? content = null)
+    private static void WriteLine(string? content = null, ConsoleColor? color = null)
     {
+        if (color != null)
+            Console.ForegroundColor = color.Value;
+
         Console.WriteLine(content);
+
+        if (color != null)
+            Console.ResetColor();
     }
 }

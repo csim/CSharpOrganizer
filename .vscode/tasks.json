@@ -153,7 +153,7 @@
         "quiet"
       ],
       "options": {
-        "cwd": "${workspaceFolder}/src/Koalas.Tests"
+        "cwd": "${workspaceFolder}/src/CSharply.Tests"
       },
       "problemMatcher": "$msCompile",
       "group": "test",
@@ -165,6 +165,28 @@
         "panel": "shared"
       },
       "isBackground": true
+    },
+    {
+      "label": "vscode-compile",
+      "command": "npm",
+      "type": "process",
+      "args": [
+        "run",
+        "build"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/src/vscode-csharply"
+      },
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "presentation": {
+        "clear": true,
+        "echo": true,
+        "reveal": "never",
+        "focus": false,
+        "panel": "shared"
+      },
+      "isBackground": false
     }
   ]
 }

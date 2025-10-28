@@ -6,5 +6,6 @@
     "irongeek.csharpen",
     "ms-dotnettools.dotnet-interactive-vscode",
     "editorconfig.editorconfig",
+    "csim.csharply",
   ]
 }

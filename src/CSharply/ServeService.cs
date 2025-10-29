@@ -17,8 +17,6 @@ public class ServeService
     public ServeService(int port)
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder();
-
-        // Configure URLs with the specified port
         builder.WebHost.UseUrls($"http://localhost:{port}");
 
         // Add services

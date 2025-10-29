@@ -4,7 +4,7 @@
 [![nuget](https://img.shields.io/nuget/v/CSharply.svg)](https://www.nuget.org/packages/CSharply/)
 [![vsCode](https://img.shields.io/visual-studio-marketplace/v/csim.csharply.svg)](https://marketplace.visualstudio.com/items?itemName=csim.csharply)
 
-A opinionated C# code organization tool that automatically organizes C# files according to best practices. Available as a CLI tool, web API, and VS Code extension.
+A opinionated tool that organizes C# files according to best practices. Available as a CLI tool, web API, and VS Code extension.
 
 ## Features
 
@@ -52,7 +52,7 @@ Start a web server to organize code via HTTP API:
 
 ```bash
 csharply serve
-csharply serve --port 8080
+csharply serve --port 8149
 ```
 
 #### API Endpoints

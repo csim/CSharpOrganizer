@@ -15,7 +15,7 @@
     <RepositoryUrl>https://github.com/csim/CSharply</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>csharp;code-formatter;dotnet-tool;roslyn</PackageTags>
-    <PackageReadmeFile>../../README.md</PackageReadmeFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>

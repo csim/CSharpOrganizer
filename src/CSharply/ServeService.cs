@@ -43,7 +43,7 @@ public class ServeService
 
     private void ConfigureRoutes()
     {
-        _app.MapGet("/health", () => string.Empty).WithName("Health");
+        _app.MapGet("/health", () => string.Empty).WithName("health");
 
         _app.MapPost(
                 "/organize",
@@ -72,7 +72,7 @@ public class ServeService
                     }
                 }
             )
-            .WithName("OrganizeCode")
+            .WithName("organize")
             .Accepts<string>("text/plain");
     }
 }

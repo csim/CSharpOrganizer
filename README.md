@@ -145,7 +145,7 @@ namespace MyProject
 }
 ```
 
-## Ignoring Files with .csharplyignore
+## Ignoring Files
 
 CSharply supports a `.csharplyignore` file to exclude specific files and directories from organization. This is useful for:
 
@@ -180,7 +180,7 @@ packages/
 
 ### Pattern Syntax
 
-The `.csharplyignore` file supports the same patterns as `.gitignore`:
+The `.csharplyignore` file supports the same globbing patterns as `.gitignore`:
 
 | Pattern | Description | Example |
 |---------|-------------|---------|

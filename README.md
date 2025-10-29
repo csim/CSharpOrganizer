@@ -81,7 +81,7 @@ CSharply organizes your C# code according to Microsoft's coding conventions:
 - Sorts alphabetically
 - Groups System namespaces first
 
-### Class Members
+### Rules
 
 Member Order:
   1. Namespaces

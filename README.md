@@ -4,16 +4,16 @@
 [![nuget](https://img.shields.io/nuget/v/CSharply.svg)](https://www.nuget.org/packages/CSharply/)
 [![vsCode](https://img.shields.io/visual-studio-marketplace/v/csim.csharply.svg)](https://marketplace.visualstudio.com/items?itemName=csim.csharply)
 
-A powerful C# code organization tool that automatically organizes `using` statements and sorts class members according to best practices. Available as a CLI tool, web API, and VS Code extension.
+A opinionated C# code organization tool that automatically organizes C# files according to best practices. Available as a CLI tool, web API, and VS Code extension.
 
 ## Features
 
-- 🎯 **Automatic Code Organization**: Organizes using statements and class members
-- 🔧 **Multiple Interfaces**: CLI, Web API, Named Pipes, and VS Code extension
+- 🎯 **Automatic Code Organization**: Organizes all members and using statements
+- 🔧 **Multiple Interfaces**: CLI, Web API, and VS Code extension
 - ⚡ **Fast Performance**: Built with Roslyn for accurate C# parsing
 - 🌐 **Cross-Platform**: Works on Windows, macOS, and Linux
 - 📁 **Batch Processing**: Organize entire directories or single files
-- 🔄 **Real-time Processing**: Daemon service for persistent operations
+- 🔄 **Real-time Processing**: Web server for fast operations without startup costs per request
 
 ## Installation
 
@@ -58,63 +58,66 @@ csharply serve --port 8080
 #### API Endpoints
 
 - `GET /health` - Health check
-- `GET /info` - Server information
 - `POST /organize` - Organize C# code (plain text body)
 
 #### Example API Usage
 
 ```bash
 # Organize code via plain text
-curl -X POST http://localhost:8147/organize \
+curl -X POST http://localhost:8149/organize \
   -H "Content-Type: text/plain" \
   -d "using System.Linq; using System; class Test { }"
 ```
 
-The daemon service allows other processes to send C# code for organization via named pipes, useful for editor integrations and automated workflows.
-
 ### VS Code Extension
 
-The VS Code extension provides:
-- **Command**: "CSharply: Organize File" (`Ctrl+Shift+P`)
-- **Context Menu**: Right-click any C# file
-- **Automatic Integration**: Works with the daemon service if running
+`Ctrl+Shift+P`, then `CSharply: Organize C# file` or `CSharply: Organize all C# files in workspace folders`
 
 ## What Gets Organized
 
 CSharply organizes your C# code according to Microsoft's coding conventions:
 
 ### Using Statements
-- Removes unused using statements
 - Sorts alphabetically
 - Groups System namespaces first
-- Removes duplicates
 
 ### Class Members
 
-Orders members by type and access modifier:
-  1. Fields (private, protected, public)
-  2. Constructors
-  3. Properties
-  4. Events
-  5. Methods
-  6. Nested types
+Member Order:
+  1. Namespaces
+  2. Interfaces
+  3. Fields
+  4. Properties
+  5. Constructors
+  6. Methods
+  7. Nested types
+  8. Enums
+
+Access Modifier Order:
+  1. public
+  2. internal
+  3. protected
+  4. private
 
 ### Example
 
 **Before:**
 ```csharp
-using System.Linq;
 using System.Collections.Generic;
+
+using System.Linq;
 using System;
 
 namespace MyProject
 {
     public class Example
     {
-        public void DoSomething() { }
-        private string _field;
+        public void DoSomething1() { }
+        private string _field1;
+        public void DoSomething2() { }
         public Example() { }
         public string Property { get; set; }
+        private string _field2;
     }
 }
 ```
@@ -129,13 +132,16 @@ namespace MyProject
 {
     public class Example
     {
-        private string _field;
+        private string _field1;
+        private string _field2;
         
         public Example() { }
         
         public string Property { get; set; }
         
-        public void DoSomething() { }
+        public void DoSomething1() { }
+
+        public void DoSomething2() { }
     }
 }
 ```

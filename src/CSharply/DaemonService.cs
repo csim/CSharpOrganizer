@@ -5,15 +5,15 @@ namespace CSharply;
 
 public sealed class DaemonService(string pipeName = "csharply") : IDisposable
 {
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
+    private bool _isRunning;
+    private readonly string _pipeName = pipeName;
+
     public void Dispose()
     {
         Stop();
         _cancellationTokenSource.Dispose();
     }
-
-    private readonly CancellationTokenSource _cancellationTokenSource = new();
-    private bool _isRunning;
-    private readonly string _pipeName = pipeName;
 
     public async Task StartAsync()
     {

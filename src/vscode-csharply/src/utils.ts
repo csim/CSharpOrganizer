@@ -1,8 +1,27 @@
 import { exec } from "child_process";
 import * as path from "path";
 import * as fs from "fs";
+import * as vscode from "vscode";
 
 let executablePath: string | null = null;
+let outputChannel: vscode.OutputChannel;
+
+export function getOutputChannel(): vscode.OutputChannel {
+  if (!outputChannel) {
+    outputChannel = vscode.window.createOutputChannel("CSharply");
+  }
+  return outputChannel;
+}
+
+export function log(message: string): void {
+  const channel = getOutputChannel();
+  const timestamp = new Date().toLocaleTimeString();
+  channel.appendLine(`[${timestamp}] ${message}`);
+}
+
+export function showOutput(): void {
+  getOutputChannel().show();
+}
 
 export async function findCSharplyExecutable(): Promise<string | null> {
   if (executablePath) {
@@ -53,4 +72,8 @@ async function testExecutable(execPath: string): Promise<boolean> {
       resolve(!error);
     });
   });
+}
+
+export function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

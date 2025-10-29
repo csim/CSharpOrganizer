@@ -285,7 +285,7 @@ public static class Program
 
         try
         {
-            int port = ParseIntArg(args, "--port", 8147);
+            int port = ParseIntArg(args, "--port", 8149);
 
             WriteLine("Starting CSharply Web Server...", ConsoleColor.Green);
 

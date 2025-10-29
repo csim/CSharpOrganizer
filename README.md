@@ -1,8 +1,8 @@
 # CSharply
 
-[![Build and Publish](https://github.com/csim/CSharply/actions/workflows/build.yml/badge.svg)](https://github.com/csim/CSharply/actions/workflows/build.yml)
-[![NuGet Version](https://img.shields.io/nuget/v/CSharply.svg)](https://www.nuget.org/packages/CSharply/)
-[![VS Code Extension](https://img.shields.io/visual-studio-marketplace/v/csim.csharply.svg)](https://marketplace.visualstudio.com/items?itemName=csim.csharply)
+[![build](https://github.com/csim/CSharply/actions/workflows/build.yml/badge.svg)](https://github.com/csim/CSharply/actions/workflows/build.yml)
+[![nuget](https://img.shields.io/nuget/v/CSharply.svg)](https://www.nuget.org/packages/CSharply/)
+[![vsCode](https://img.shields.io/visual-studio-marketplace/v/csim.csharply.svg)](https://marketplace.visualstudio.com/items?itemName=csim.csharply)
 
 A powerful C# code organization tool that automatically organizes `using` statements and sorts class members according to best practices. Available as a CLI tool, web API, and VS Code extension.
 

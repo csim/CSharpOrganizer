@@ -146,9 +146,129 @@ namespace MyProject
 }
 ```
 
-## Configuration
+## Ignoring Files with .csharplyignore
 
-### Command Line Options
+CSharply supports a `.csharplyignore` file to exclude specific files and directories from organization. This is useful for:
+
+- Generated code files
+- Third-party libraries
+- Legacy code that shouldn't be modified
+- Files with custom formatting requirements
+
+### Creating a .csharplyignore File
+
+Create a `.csharplyignore` file in your project root or any directory you want to organize. The file uses gitignore-style patterns:
+
+```gitignore
+# Ignore all generated files
+**/Generated/
+**/*.Designer.cs
+**/*.g.cs
+
+# Ignore specific files
+Models/LegacyModel.cs
+Controllers/ThirdPartyController.cs
+
+# Ignore by pattern
+**/*Template*.cs
+**/Migrations/**/*.cs
+
+# Ignore entire directories
+bin/
+obj/
+packages/
+```
+
+### Pattern Syntax
+
+The `.csharplyignore` file supports the same patterns as `.gitignore`:
+
+| Pattern | Description | Example |
+|---------|-------------|---------|
+| `*.cs` | Match any .cs file | `Generated.cs`, `Model.cs` |
+| `**/Generated/` | Match Generated directory anywhere | `src/Generated/`, `test/Generated/` |
+| `Models/*.cs` | Match .cs files in Models directory | `Models/User.cs` |
+| `**/*.Designer.cs` | Match Designer.cs files anywhere | `Form1.Designer.cs` |
+| `!Important.cs` | Negation - don't ignore this file | Override previous ignore rules |
+
+### How It Works
+
+1. CSharply looks for `.csharplyignore` files starting from the target directory
+2. It walks up the directory tree to find additional ignore files
+3. Patterns are applied in order, with more specific files taking precedence
+4. Files matching any pattern are skipped during organization
+
+### Examples
+
+#### Basic Project Structure
+```
+MyProject/
+├── .csharplyignore          # Root ignore file
+├── src/
+│   ├── .csharplyignore      # Source-specific ignores
+│   ├── Controllers/
+│   ├── Models/
+│   └── Generated/           # Ignored directory
+├── tests/
+└── bin/                     # Ignored directory
+```
+
+#### Sample .csharplyignore for ASP.NET Core
+```gitignore
+# Build outputs
+bin/
+obj/
+publish/
+
+# Generated files
+**/*.Designer.cs
+**/*.g.cs
+**/Migrations/*.cs
+
+# NuGet packages
+packages/
+
+# Entity Framework
+**/Migrations/
+
+# Razor views (optional - if you want to preserve formatting)
+**/*.cshtml.cs
+
+# Third-party code
+**/ThirdParty/
+**/External/
+```
+
+#### Sample .csharplyignore for WinForms/WPF
+```gitignore
+# Designer files
+**/*.Designer.cs
+**/*.g.cs
+
+# Resource files
+**/*.resx
+
+# Build outputs
+bin/
+obj/
+
+# Legacy code
+**/Legacy/
+**/Old/
+```
+
+### Verbose Output
+
+Use the `--verbose` flag to see which files are being ignored:
+
+```bash
+csharply organize --verbose ./src
+# Output will show:
+# skipped   : src/Generated/Model.cs
+# organized : src/Controllers/UserController.cs
+```
+
+# Command Line Options
 
 ```bash
 csharply organize [options] <path>

@@ -12,7 +12,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(outputChannel);
 
   // Log activation
-  log("CSharply extension activated");
+  log("CSharply extension activating...");
 
   organizeFileCommand = vscode.commands.registerCommand(
     "csharply.organize.file",
@@ -65,6 +65,8 @@ export function activate(context: vscode.ExtensionContext) {
     testServerCommand,
     restartServerCommand
   );
+
+  log("CSharply extension activated.");
 }
 
 export function deactivate() {

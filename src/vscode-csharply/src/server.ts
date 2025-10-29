@@ -1,7 +1,13 @@
 import * as vscode from "vscode";
 import { exec, ChildProcess, spawn } from "child_process";
 import * as net from "net";
-import { findCSharplyExecutable, findOpenPort, wait, log } from "./utils";
+import {
+  findCliExecutable,
+  findOpenPort,
+  wait,
+  log,
+  ensureCliInstalled,
+} from "./utils";
 
 let serverProcess: ChildProcess | undefined;
 let isStarting = false;
@@ -22,8 +28,8 @@ export async function organizeFileCommand() {
   try {
     const fileContents = activeEditor.document.getText();
     const organizedCode = await organizeCode(fileContents);
+    const fsPath = activeEditor.document.uri.fsPath;
 
-    // Update file content
     if (organizedCode && organizedCode !== fileContents) {
       await activeEditor.edit((editBuilder) => {
         editBuilder.replace(
@@ -32,15 +38,15 @@ export async function organizeFileCommand() {
         );
       });
 
-      log("File organized successfully.");
+      log(`organized: ${fsPath}`);
     } else {
-      log("no changes to file");
+      log(`no change: ${fsPath}`);
     }
 
     await activeEditor.document.save();
   } catch (error) {
     log(`error organizing file: ${error}`);
-    vscode.window.showErrorMessage(`CSharply error: ${error}`);
+    vscode.window.showErrorMessage(`CSharply: ${error}`);
   }
 }
 
@@ -94,6 +100,8 @@ async function start(): Promise<void> {
     return;
   }
 
+  await ensureCliInstalled();
+
   isStarting = true;
 
   try {
@@ -101,12 +109,12 @@ async function start(): Promise<void> {
 
     serverUrl = `http://127.0.0.1:${serverPort}`;
 
-    const executablePath = await findCSharplyExecutable();
+    const executablePath = await findCliExecutable();
     if (!executablePath) {
-      throw new Error("CSharply executable not found");
+      throw new Error("CSharply: cli not found, check output for details.");
     }
 
-    log(`starting server from ${executablePath}`);
+    log(`starting server: ${executablePath} server --port ${serverPort}`);
 
     serverProcess = spawn(
       executablePath,
@@ -162,7 +170,7 @@ async function start(): Promise<void> {
 }
 
 export async function restart(): Promise<void> {
-  stop(); // Now synchronous
+  stop();
 
   await wait(1000);
 
@@ -177,11 +185,11 @@ export function stop(): void {
   const pid = serverProcess.pid;
 
   try {
-    log(`Stopping server process ${pid}...`);
+    log(`stopping server process ${pid}...`);
     serverProcess.kill("SIGKILL");
     log(`server process ${pid} terminated`);
   } catch (error) {
-    log(`Error stopping server: ${error}`);
+    log(`error stopping server: ${error}`);
   } finally {
     // Always cleanup references
     serverProcess = undefined;
@@ -201,7 +209,6 @@ function isRunning(): boolean {
 
 export async function testConnection(): Promise<boolean> {
   try {
-    // First check if server process is running
     if (!isRunning()) {
       return false;
     }
@@ -218,16 +225,4 @@ export async function testConnection(): Promise<boolean> {
     log(`HTTP connection test failed: ${error}`);
     return false;
   }
-}
-
-function getServerStatus(): {
-  isRunning: boolean;
-  pid?: number;
-  isStarting: boolean;
-} {
-  return {
-    isRunning: isRunning(),
-    pid: serverProcess?.pid,
-    isStarting: isStarting,
-  };
 }

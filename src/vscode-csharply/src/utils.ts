@@ -7,24 +7,11 @@ import * as net from "net";
 let executablePath: string | null = null;
 let outputChannel: vscode.OutputChannel;
 
-export function getOutputChannel(): vscode.OutputChannel {
-  if (!outputChannel) {
-    outputChannel = vscode.window.createOutputChannel("CSharply");
-  }
-  return outputChannel;
-}
-
-export function log(message: string): void {
-  const channel = getOutputChannel();
-  const timestamp = new Date().toLocaleTimeString();
-  channel.appendLine(`[${timestamp}] ${message}`);
-}
-
 export function showOutput(): void {
   getOutputChannel().show();
 }
 
-export async function findCSharplyExecutable(): Promise<string | null> {
+export async function findCliExecutable(): Promise<string | null> {
   if (executablePath) {
     return executablePath;
   }
@@ -41,42 +28,113 @@ export async function findCSharplyExecutable(): Promise<string | null> {
 
   for (const execPath of commonPaths) {
     try {
-      // Check if file exists for full paths
       if (path.isAbsolute(execPath)) {
         if (fs.existsSync(execPath)) {
-          // Verify it works by testing --version
-          const isWorking = await testExecutable(execPath);
+          const isWorking = await testCli(execPath);
           if (isWorking) {
             executablePath = execPath;
             return execPath;
           }
         }
       } else {
-        // For relative paths (like "csharply"), test directly
-        const isWorking = await testExecutable(execPath);
+        const isWorking = await testCli(execPath);
         if (isWorking) {
           executablePath = execPath;
           return execPath;
         }
       }
     } catch (error) {
-      // Continue searching
+      // continue
     }
   }
 
   return null;
 }
 
-async function testExecutable(execPath: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    exec(`"${execPath}" --version`, { timeout: 2000 }, (error) => {
-      resolve(!error);
+async function testCli(execPath: string): Promise<boolean> {
+  try {
+    await new Promise<void>((resolve, reject) => {
+      exec(`"${execPath}" --version`, { timeout: 2000 }, (error) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
     });
-  });
+    return true;
+  } catch (error) {
+    return false;
+  }
 }
 
-export function wait(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+export async function ensureCliInstalled(): Promise<string> {
+  const existingPath = await findCliExecutable();
+  if (existingPath) {
+    return existingPath;
+  }
+
+  log("cli not found, attempting to install...");
+
+  // Try to install using dotnet tool
+  const installResult = await installCli();
+  if (!installResult.Success) {
+    throw new Error(`CSharply: Failed to install, check output for details.`);
+  }
+
+  log("cli installed successfully, verifying...");
+
+  // Clear cached path and try to find it again
+  const newPath = await findCliExecutable();
+  if (!newPath) {
+    throw new Error(
+      "CSharply: installation complete but cli not found, check output for details."
+    );
+  }
+
+  log(`verified cli installation at: ${newPath}`);
+
+  return newPath;
+}
+
+async function installCli(): Promise<{
+  Success: boolean;
+  Error?: string;
+}> {
+  try {
+    log("running: dotnet tool install csharply --global");
+
+    const { stdout, stderr } = await new Promise<{
+      stdout: string;
+      stderr: string;
+    }>((resolve, reject) => {
+      exec(
+        "dotnet tool install csharply --global",
+        { timeout: 30000 },
+        (error, stdout, stderr) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+          resolve({ stdout, stderr });
+        }
+      );
+    });
+
+    if (stdout) {
+      log(`installation stdout: ${stdout}`);
+    }
+    if (stderr) {
+      log(`installation stderr: ${stderr}`);
+    }
+
+    log("dotnet tool install completed");
+
+    return { Success: true };
+  } catch (error: any) {
+    log(`installation error: ${error.message}`);
+    return { Success: false, Error: error.message };
+  }
 }
 
 export async function findOpenPort(
@@ -107,8 +165,25 @@ export async function findOpenPort(
   }
 
   throw new Error(
-    `No available ports found in range ${startPort}-${
+    `no available ports found in range ${startPort}-${
       startPort + maxAttempts - 1
     }`
   );
+}
+
+export function getOutputChannel(): vscode.OutputChannel {
+  if (!outputChannel) {
+    outputChannel = vscode.window.createOutputChannel("CSharply");
+  }
+  return outputChannel;
+}
+
+export function log(message: string): void {
+  const channel = getOutputChannel();
+  const timestamp = new Date().toLocaleTimeString();
+  channel.appendLine(`[${timestamp}] ${message}`);
+}
+
+export function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

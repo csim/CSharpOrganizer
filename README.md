@@ -1,9 +1,5 @@
 # CSharply
 
-[![build](https://github.com/csim/CSharply/actions/workflows/build.yml/badge.svg)](https://github.com/csim/CSharply/actions/workflows/build.yml)
-[![nuget](https://img.shields.io/nuget/v/CSharply.svg)](https://www.nuget.org/packages/CSharply/)
-[![vsCode](https://img.shields.io/visual-studio-marketplace/v/csim.csharply.svg)](https://marketplace.visualstudio.com/items?itemName=csim.csharply)
-
 A opinionated tool that organizes C# files according to best practices. Available as a CLI tool, web API, and VS Code extension.
 
 ## Features

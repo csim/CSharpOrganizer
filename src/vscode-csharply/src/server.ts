@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { exec, ChildProcess, spawn } from "child_process";
 import * as net from "net";
-import { findCSharplyExecutable, wait, log } from "./utils";
+import { findCSharplyExecutable, findOpenPort, wait, log } from "./utils";
 
 let serverProcess: ChildProcess | undefined;
 let isStarting = false;
@@ -34,10 +34,12 @@ export async function organizeFileCommand() {
 
       log("File organized successfully.");
     } else {
-      log("No changes to file.");
+      log("no changes to file");
     }
+
+    await activeEditor.document.save();
   } catch (error) {
-    log(`Error organizing file: ${error}`);
+    log(`error organizing file: ${error}`);
     vscode.window.showErrorMessage(`CSharply error: ${error}`);
   }
 }
@@ -56,7 +58,6 @@ async function serverHealthy(): Promise<boolean> {
 }
 
 async function organizeCode(code: string): Promise<string> {
-  // Ensure server is running
   if (!isRunning()) {
     await start();
   }
@@ -70,7 +71,7 @@ async function organizeCode(code: string): Promise<string> {
   }
 
   if (retries >= maxRetries) {
-    throw new Error("httpserver not available.");
+    throw new Error("server not available.");
   }
 
   const response = await fetch(`${serverUrl}/organize`, {
@@ -96,24 +97,20 @@ async function start(): Promise<void> {
   isStarting = true;
 
   try {
-    // Find an available port
-    const serverPort = await findPort();
-    serverUrl = `http://localhost:${serverPort}`;
-    log(`Using port ${serverPort} for HTTP server`);
+    const serverPort = await findOpenPort(8149, 100);
+
+    serverUrl = `http://127.0.0.1:${serverPort}`;
 
     const executablePath = await findCSharplyExecutable();
     if (!executablePath) {
       throw new Error("CSharply executable not found");
     }
 
-    log(`Starting HTTP server from ${executablePath}...`);
-
-    // const executablePath =
-    //   "C:\\src\\CSharply\\artifacts\\bin\\CSharply\\debug\\CSharply.exe";
+    log(`starting server from ${executablePath}`);
 
     serverProcess = spawn(
       executablePath,
-      ["serve", "--port", serverPort.toString()],
+      ["server", "--port", serverPort.toString()],
       {
         detached: false,
       }
@@ -122,12 +119,12 @@ async function start(): Promise<void> {
     // Wait for spawn event
     await new Promise<void>((resolve, reject) => {
       serverProcess!.on("spawn", () => {
-        log("HTTP server started");
+        log(`server started: ${serverUrl}`);
         resolve();
       });
 
       serverProcess!.on("error", (error) => {
-        log(`Failed to start server: ${error.message}`);
+        log(`failed to start server: ${error.message}`);
         serverProcess = undefined;
         isStarting = false;
         reject(error);
@@ -147,14 +144,14 @@ async function start(): Promise<void> {
     isStarting = false;
 
     if (waited >= maxWait) {
-      throw new Error("HTTP server started but is not healthy");
+      throw new Error("server started but is not healthy");
     } else {
-      log("HTTP server is healthy and ready");
+      log("server is healthy and ready");
     }
 
     // Set up exit handler for cleanup
     serverProcess.on("exit", (code, signal) => {
-      log(`HTTP server exited with code ${code}, signal ${signal}`);
+      log(`server exited with code ${code}, signal ${signal}`);
       serverProcess = undefined;
       isStarting = false;
     });
@@ -180,16 +177,16 @@ export function stop(): void {
   const pid = serverProcess.pid;
 
   try {
-    log(`Stopping http server process ${pid}...`);
+    log(`Stopping server process ${pid}...`);
     serverProcess.kill("SIGKILL");
-    log(`http server process ${pid} terminated`);
+    log(`server process ${pid} terminated`);
   } catch (error) {
-    log(`Error stopping http server: ${error}`);
+    log(`Error stopping server: ${error}`);
   } finally {
     // Always cleanup references
     serverProcess = undefined;
     isStarting = false;
-    log("http server cleanup completed");
+    log("server cleanup completed");
   }
 }
 
@@ -233,39 +230,4 @@ function getServerStatus(): {
     pid: serverProcess?.pid,
     isStarting: isStarting,
   };
-}
-
-async function findPort(): Promise<number> {
-  const isPortOpen = (port: number): Promise<boolean> => {
-    return new Promise((resolve) => {
-      const server = net.createServer();
-
-      server.listen(port, () => {
-        server.close(() => {
-          resolve(true); // Port is available
-        });
-      });
-
-      server.on("error", () => {
-        resolve(false); // Port is in use
-      });
-    });
-  };
-
-  // Try ports starting from 8149
-  const startPort = 8149;
-  const maxAttempts = 100; // Try 100 ports max
-
-  for (let i = 0; i < maxAttempts; i++) {
-    const port = startPort + i;
-    if (await isPortOpen(port)) {
-      return port;
-    }
-  }
-
-  throw new Error(
-    `No available ports found in range ${startPort}-${
-      startPort + maxAttempts - 1
-    }`
-  );
 }

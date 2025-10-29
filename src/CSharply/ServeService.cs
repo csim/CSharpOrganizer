@@ -10,11 +10,11 @@ using Microsoft.Extensions.Hosting;
 
 namespace CSharply;
 
-public class ServeService
+public class ServerService
 {
     private readonly WebApplication _app;
 
-    public ServeService(int port)
+    public ServerService(int port)
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder();
         builder.WebHost.UseUrls($"http://localhost:{port}");

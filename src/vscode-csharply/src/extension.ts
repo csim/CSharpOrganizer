@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
 import * as server from "./server";
-import * as daemon from "./daemon";
 import * as cli from "./cli";
 import { getOutputChannel, log, showOutput } from "./utils";
 

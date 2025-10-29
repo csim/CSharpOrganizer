@@ -2,6 +2,7 @@ import { exec } from "child_process";
 import * as path from "path";
 import * as fs from "fs";
 import * as vscode from "vscode";
+import * as net from "net";
 
 let executablePath: string | null = null;
 let outputChannel: vscode.OutputChannel;
@@ -76,4 +77,38 @@ async function testExecutable(execPath: string): Promise<boolean> {
 
 export function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function findOpenPort(
+  startPort: number,
+  maxAttempts: number = 100
+): Promise<number> {
+  const isPortAvailable = (port: number): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const server = net.createServer();
+
+      server.listen(port, "127.0.0.1", () => {
+        server.close(() => {
+          resolve(true); // Port is available - we could bind to it
+        });
+      });
+
+      server.on("error", (err: any) => {
+        resolve(false); // Port is in use - couldn't bind to it
+      });
+    });
+  };
+
+  for (let i = 0; i < maxAttempts; i++) {
+    const port = startPort + i;
+    if (await isPortAvailable(port)) {
+      return port;
+    }
+  }
+
+  throw new Error(
+    `No available ports found in range ${startPort}-${
+      startPort + maxAttempts - 1
+    }`
+  );
 }

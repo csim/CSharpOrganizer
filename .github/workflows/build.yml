@@ -175,6 +175,7 @@ jobs:
       - name: Package extension
         run: |
           cd src/csharply-vscode
+          mkdir -p ../../artifacts/
           vsce package --out ../../artifacts/csharply-v${{ needs.version.outputs.version }}.vsix
 
       - name: Publish to VS Code Marketplace

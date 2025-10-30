@@ -28,27 +28,32 @@ export async function organizeFileCommand() {
     const fsPath = activeEditor.document.uri.fsPath;
     const fileContents = activeEditor.document.getText();
 
-    const { code, outcome } = await organizeCode(fsPath, fileContents);
+    const { code: organizedCode, outcome } = await organizeCode(
+      fsPath,
+      fileContents
+    );
 
-    if (!code) {
+    if (!organizedCode) {
       log(`no code returned for file: ${fsPath}`);
 
       return;
     }
 
-    if (code === fileContents) {
-      log(`no change: ${fsPath}`);
-    } else if (outcome === "organized") {
-      await activeEditor.edit((editBuilder) => {
-        editBuilder.replace(
-          new vscode.Range(0, 0, activeEditor.document.lineCount, 0),
-          code
-        );
-      });
-
-      log(`organized: ${fsPath}`);
-    } else if (outcome === "ignored") {
+    if (outcome === "ignored") {
       log(`ignored  : ${fsPath}`);
+    } else if (outcome === "organized") {
+      if (fileContents === organizedCode) {
+        log(`no change: ${fsPath}`);
+      } else {
+        await activeEditor.edit((editBuilder) => {
+          editBuilder.replace(
+            new vscode.Range(0, 0, activeEditor.document.lineCount, 0),
+            organizedCode
+          );
+        });
+
+        log(`organized: ${fsPath}`);
+      }
     }
 
     await activeEditor.document.save();

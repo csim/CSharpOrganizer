@@ -54,13 +54,6 @@ public class ServerService
                     {
                         using StreamReader reader = new(context.Request.Body);
                         string code = await reader.ReadToEndAsync();
-
-                        if (string.IsNullOrWhiteSpace(code.Trim()))
-                        {
-                            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                            return string.Empty;
-                        }
-
                         string organizedCode = OrganizeService.OrganizeCode(code);
 
                         return organizedCode;
@@ -86,15 +79,10 @@ public class ServerService
                         string filePath = await reader.ReadToEndAsync();
 
                         FileInfo file = new(filePath);
-                        context.Response.StatusCode = (int)HttpStatusCode.OK;
-
                         if (!file.Exists)
                             return "invalid";
 
-                        bool ignore = _ignoreService.Ignore(file);
-                        context.Response.StatusCode = (int)HttpStatusCode.OK;
-
-                        return ignore ? "true" : "false";
+                        return _ignoreService.Ignore(file) ? "true" : "false";
                     }
                     catch (Exception ex)
                     {

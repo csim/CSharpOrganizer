@@ -150,7 +150,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "22.16.0"
           cache: "npm"
           cache-dependency-path: "src/csharply-vscode/package-lock.json"
 
@@ -175,7 +175,6 @@ jobs:
       - name: Package extension
         run: |
           cd src/csharply-vscode
-          mkdir -p ../../artifacts/
           vsce package --out ../../artifacts/csharply-v${{ needs.version.outputs.version }}.vsix
 
       - name: Publish to VS Code Marketplace

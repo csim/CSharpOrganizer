@@ -19,27 +19,36 @@ export async function organizeFileCommand() {
     return;
   }
 
-  const path = activeEditor.document.uri.fsPath;
-  if (!path.endsWith(".cs")) {
+  const filePath = activeEditor.document.uri.fsPath;
+  if (!filePath.endsWith(".cs")) {
     return;
   }
 
   try {
-    const fileContents = activeEditor.document.getText();
-    const organizedCode = await organizeCode(fileContents);
     const fsPath = activeEditor.document.uri.fsPath;
+    const fileContents = activeEditor.document.getText();
 
-    if (organizedCode && organizedCode !== fileContents) {
+    const { code, outcome } = await organizeCode(fsPath, fileContents);
+
+    if (!code) {
+      log(`no code returned for file: ${fsPath}`);
+
+      return;
+    }
+
+    if (code === fileContents) {
+      log(`no change: ${fsPath}`);
+    } else if (outcome === "organized") {
       await activeEditor.edit((editBuilder) => {
         editBuilder.replace(
           new vscode.Range(0, 0, activeEditor.document.lineCount, 0),
-          organizedCode
+          code
         );
       });
 
       log(`organized: ${fsPath}`);
-    } else {
-      log(`no change: ${fsPath}`);
+    } else if (outcome === "ignored") {
+      log(`ignored  : ${fsPath}`);
     }
 
     await activeEditor.document.save();
@@ -62,7 +71,10 @@ async function isServerHealthy(): Promise<boolean> {
   }
 }
 
-async function organizeCode(code: string): Promise<string> {
+async function organizeCode(
+  filePath: string,
+  code: string
+): Promise<{ code: string; outcome: string }> {
   if (!isRunning()) {
     await start();
   }
@@ -84,15 +96,21 @@ async function organizeCode(code: string): Promise<string> {
     method: "POST",
     headers: {
       "Content-Type": "text/plain",
+      "x-file-path": filePath,
     },
     body: code,
   });
 
   if (!response.ok) {
-    throw new Error(`CSharply Error: ${response.status} ${response.text()}`);
+    throw new Error(
+      `CSharply Error: ${response.status} ${response.statusText}`
+    );
   }
 
-  return await response.text();
+  var outcome = response.headers.get("x-outcome");
+  var responseCode = await response.text();
+
+  return { code: responseCode, outcome: outcome || "unknown" };
 }
 
 async function start(): Promise<void> {

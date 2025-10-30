@@ -7,13 +7,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Primitives;
 
 namespace CSharply;
 
 public class ServerService
 {
     private readonly WebApplication _app;
-    private readonly IgnoreFileService _ignoreService = new();
 
     public ServerService(int port)
     {
@@ -48,50 +48,42 @@ public class ServerService
 
         _app.MapPost(
                 "/organize",
-                async (HttpContext context) =>
+                static async (HttpContext context) =>
                 {
                     try
                     {
                         using StreamReader reader = new(context.Request.Body);
                         string code = await reader.ReadToEndAsync();
 
-                        return OrganizeService.OrganizeCode(code);
+                        if (
+                            context.Request.Headers.TryGetValue(
+                                "x-file-path",
+                                out StringValues headerValue
+                            )
+                        )
+                        {
+                            string? filePath = headerValue.FirstOrDefault() ?? string.Empty;
+                            IgnoreFileService ignoreService = new();
+                            if (filePath != null && ignoreService.Ignore(new FileInfo(filePath)))
+                            {
+                                context.Response.Headers.Append("x-outcome", "ignored");
+                                await context.Response.WriteAsync(code);
+                                return;
+                            }
+                        }
+
+                        context.Response.Headers.Append("x-outcome", "organized");
+                        code = OrganizeService.OrganizeCode(code);
+                        await context.Response.WriteAsync(code);
                     }
                     catch (Exception ex)
                     {
                         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-
-                        return ex.Message;
+                        await context.Response.WriteAsync(ex.Message);
                     }
                 }
             )
-            .WithName("organize")
-            .Accepts<string>("text/plain");
-
-        _app.MapPost(
-                "/ignore",
-                async (HttpContext context) =>
-                {
-                    try
-                    {
-                        using StreamReader reader = new(context.Request.Body);
-                        string filePath = await reader.ReadToEndAsync();
-
-                        FileInfo file = new(filePath);
-                        if (!file.Exists)
-                            return "invalid";
-
-                        return _ignoreService.Ignore(file) ? "true" : "false";
-                    }
-                    catch (Exception ex)
-                    {
-                        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-
-                        return ex.Message;
-                    }
-                }
-            )
-            .WithName("ignore")
-            .Accepts<string>("text/plain");
+            .WithName("organize");
+        //.Accepts<string>("text/plain");
     }
 }

@@ -3,6 +3,7 @@
     <LangVersion>latest</LangVersion>
     <UseArtifactsOutput>true</UseArtifactsOutput>
     <ArtifactsPath>$([MSBuild]::NormalizePath($(MSBuildThisFileDirectory), '..', 'artifacts'))</ArtifactsPath>
+    <PackageOutputPath>$(ArtifactsPath)\packages</PackageOutputPath>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <Nullable>enable</Nullable>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>

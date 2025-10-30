@@ -1,5 +1,7 @@
-#dotnet build $PSScriptRoot\src\CSharply\CSharply.csproj --configuration release
+dotnet build $PSScriptRoot\src\CSharply\CSharply.csproj --configuration debug
 
-dotnet pack $PSScriptRoot\src\CSharply\CSharply.csproj --configuration Release --output $PSScriptRoot\packages
+dotnet tool uninstall --global CSharply
 
-dotnet tool install --global --add-source $PSScriptRoot\packages CSharply
+dotnet pack $PSScriptRoot\src\CSharply\CSharply.csproj --configuration debug --output $PSScriptRoot\artifacts\packages
+
+dotnet tool install --global --add-source $PSScriptRoot\artifacts\packages CSharply

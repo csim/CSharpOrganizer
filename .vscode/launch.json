@@ -8,25 +8,16 @@
       "preLaunchTask": "build",
       "program": "${workspaceFolder}/artifacts/bin/CSharply/debug/CSharply.dll",
       "args": [
-        "organize",
-        "${workspaceFolder}/.scratch/test.cs",
-        "--simulate",
+        "server",
       ],
+      // "args": [
+      //   "organize",
+      //   "${workspaceFolder}/.scratch/test.cs",
+      //   "--simulate",
+      // ],
       "cwd": "${workspaceFolder}",
       "stopAtEntry": false,
       "console": "internalConsole"
     },
-    // {
-    //   "name": "Launch Extension",
-    //   "type": "extensionHost",
-    //   "request": "launch",
-    //   "args": [
-    //     "--extensionDevelopmentPath=${workspaceFolder}/artifacts/vscode-csharply"
-    //   ],
-    //   "outFiles": [
-    //     "${workspaceFolder}/artifacts/vscode-csharply/**/*.js"
-    //   ],
-    //   "preLaunchTask": "vscode-compile"
-    // }
   ]
 }

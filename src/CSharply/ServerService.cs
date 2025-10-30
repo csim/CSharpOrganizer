@@ -13,7 +13,7 @@ namespace CSharply;
 public class ServerService
 {
     private readonly WebApplication _app;
-    IgnoreFileService _ignoreService = new();
+    private readonly IgnoreFileService _ignoreService = new();
 
     public ServerService(int port)
     {

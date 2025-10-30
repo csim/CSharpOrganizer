@@ -22,27 +22,7 @@ export function activate(context: vscode.ExtensionContext) {
     cli.organizeWorkspaceFoldersCommand
   );
 
-  const restartServerCommand = vscode.commands.registerCommand(
-    "csharply.restart.server",
-    async () => {
-      try {
-        log("Restarting server...");
-        await server.restart();
-        log("Server restarted successfully");
-        vscode.window.showInformationMessage("Server restarted successfully");
-      } catch (error) {
-        const errorMsg = `Failed to restart server: ${error}`;
-        log(errorMsg);
-        vscode.window.showErrorMessage(errorMsg);
-      }
-    }
-  );
-
-  context.subscriptions.push(
-    organizeFileCommand,
-    organizeFolderCommand,
-    restartServerCommand
-  );
+  context.subscriptions.push(organizeFileCommand, organizeFolderCommand);
 
   log("CSharply extension activated.");
 }
@@ -51,7 +31,6 @@ export function deactivate() {
   log("CSharply extension deactivating...");
 
   try {
-    // Cleanup commands
     if (organizeFileCommand) {
       organizeFileCommand.dispose();
       organizeFileCommand = undefined;

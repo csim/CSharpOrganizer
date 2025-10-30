@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
 import { exec, ChildProcess, spawn } from "child_process";
-import * as net from "net";
 import {
   findCliExecutable,
   findOpenPort,
@@ -50,7 +49,7 @@ export async function organizeFileCommand() {
   }
 }
 
-async function serverHealthy(): Promise<boolean> {
+async function isServerHealthy(): Promise<boolean> {
   try {
     const response = await fetch(`${serverUrl}/health`, {
       method: "GET",
@@ -68,16 +67,17 @@ async function organizeCode(code: string): Promise<string> {
     await start();
   }
 
-  // Wait for server to be healthy
+  await wait(100);
+
   const maxRetries = 20;
   let retries = 0;
-  while (retries < maxRetries && !(await serverHealthy())) {
-    await wait(500);
+  while (retries < maxRetries && !(await isServerHealthy())) {
+    await wait(100);
     retries++;
   }
 
   if (retries >= maxRetries) {
-    throw new Error("server not available.");
+    throw new Error("CSharply: server not available.");
   }
 
   const response = await fetch(`${serverUrl}/organize`, {
@@ -100,31 +100,30 @@ async function start(): Promise<void> {
     return;
   }
 
-  await ensureCliInstalled();
-
   isStarting = true;
+
+  await ensureCliInstalled();
 
   try {
     const serverPort = await findOpenPort(8149, 100);
 
     serverUrl = `http://127.0.0.1:${serverPort}`;
 
-    const executablePath = await findCliExecutable();
-    if (!executablePath) {
+    const cliPath = await findCliExecutable();
+    if (!cliPath) {
       throw new Error("CSharply: cli not found, check output for details.");
     }
 
-    log(`starting server: ${executablePath} server --port ${serverPort}`);
+    log(`starting server: ${cliPath} server --port ${serverPort}`);
 
     serverProcess = spawn(
-      executablePath,
+      cliPath,
       ["server", "--port", serverPort.toString()],
       {
         detached: false,
       }
     );
 
-    // Wait for spawn event
     await new Promise<void>((resolve, reject) => {
       serverProcess!.on("spawn", () => {
         log(`server started: ${serverUrl}`);
@@ -139,12 +138,13 @@ async function start(): Promise<void> {
       });
     });
 
-    // Wait for server to become healthy
-    const maxWait = 15000; // 15 seconds
-    const checkInterval = 200; // 500ms
+    const maxWait = 5000; // 5 seconds
+    const checkInterval = 200; // 200ms
     let waited = 0;
 
-    while (waited < maxWait && !(await serverHealthy())) {
+    await wait(100);
+
+    while (waited < maxWait && !(await isServerHealthy())) {
       await wait(checkInterval);
       waited += checkInterval;
     }
@@ -157,7 +157,6 @@ async function start(): Promise<void> {
       log("server is healthy and ready");
     }
 
-    // Set up exit handler for cleanup
     serverProcess.on("exit", (code, signal) => {
       log(`server exited with code ${code}, signal ${signal}`);
       serverProcess = undefined;
@@ -185,13 +184,12 @@ export function stop(): void {
   const pid = serverProcess.pid;
 
   try {
-    log(`stopping server process ${pid}...`);
+    log(`stopping server process ${pid} ...`);
     serverProcess.kill("SIGKILL");
     log(`server process ${pid} terminated`);
   } catch (error) {
     log(`error stopping server: ${error}`);
   } finally {
-    // Always cleanup references
     serverProcess = undefined;
     isStarting = false;
     log("server cleanup completed");
@@ -205,24 +203,4 @@ function isRunning(): boolean {
     serverProcess.exitCode === null &&
     serverProcess.signalCode === null
   );
-}
-
-export async function testConnection(): Promise<boolean> {
-  try {
-    if (!isRunning()) {
-      return false;
-    }
-
-    // Then check if server is healthy
-    if (!(await serverHealthy())) {
-      return false;
-    }
-
-    // Finally test actual communication
-    await organizeCode("// test");
-    return true;
-  } catch (error) {
-    log(`HTTP connection test failed: ${error}`);
-    return false;
-  }
 }

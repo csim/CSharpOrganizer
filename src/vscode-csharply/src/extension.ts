@@ -7,11 +7,9 @@ let organizeFileCommand: vscode.Disposable | undefined;
 let organizeFolderCommand: vscode.Disposable | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
-  // Create the output channel when extension activates
   const outputChannel = getOutputChannel();
   context.subscriptions.push(outputChannel);
 
-  // Log activation
   log("CSharply extension activating...");
 
   organizeFileCommand = vscode.commands.registerCommand(
@@ -22,24 +20,6 @@ export function activate(context: vscode.ExtensionContext) {
   organizeFolderCommand = vscode.commands.registerCommand(
     "csharply.organize.workspacefolders",
     cli.organizeWorkspaceFoldersCommand
-  );
-
-  const showOutputCommand = vscode.commands.registerCommand(
-    "csharply.showOutput",
-    () => {
-      showOutput();
-    }
-  );
-
-  const testServerCommand = vscode.commands.registerCommand(
-    "csharply.test.server",
-    async () => {
-      log("Testing server connection...");
-      const isConnected = await server.testConnection();
-      const message = `Server connection: ${isConnected ? "OK" : "Failed"}`;
-      log(message);
-      vscode.window.showInformationMessage(message);
-    }
   );
 
   const restartServerCommand = vscode.commands.registerCommand(
@@ -61,8 +41,6 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     organizeFileCommand,
     organizeFolderCommand,
-    showOutputCommand,
-    testServerCommand,
     restartServerCommand
   );
 

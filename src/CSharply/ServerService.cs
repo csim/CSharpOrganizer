@@ -84,6 +84,5 @@ public class ServerService
                 }
             )
             .WithName("organize");
-        //.Accepts<string>("text/plain");
     }
 }

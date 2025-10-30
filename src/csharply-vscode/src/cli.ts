@@ -1,7 +1,5 @@
 import * as vscode from "vscode";
-import { exec } from "child_process";
-import * as path from "path";
-import * as fs from "fs";
+import { spawn } from "child_process";
 import { ensureCliInstalled, findCliExecutable, log } from "./utils";
 
 export async function organizeFileCommand(): Promise<void> {
@@ -59,22 +57,33 @@ export async function organize(
     throw new Error("CSharply: cli not found, check output for details.");
   }
 
-  const command = `"${executablePath}" organize "${path}"`;
-
   return new Promise((resolve, reject) => {
-    exec(command, async (error, stdout, stderr) => {
-      if (stdout) {
-        log(`stdout: ${stdout}`);
-      }
+    const child = spawn(executablePath, ["organize", path]);
 
-      if (error) {
-        log(`error: ${error}`);
-        reject(error);
+    let stdout = "";
+    let stderr = "";
+
+    child.stdout.on("data", (data) => {
+      const output = data.toString();
+      stdout += output;
+      log(`stdout: ${output}`);
+    });
+
+    child.stderr.on("data", (data) => {
+      const output = data.toString();
+      stderr += output;
+      log(`stderr: ${output}`);
+    });
+
+    child.on("error", (error) => {
+      log(`error: ${error}`);
+      reject(error);
+    });
+
+    child.on("close", (code) => {
+      if (code !== 0) {
+        reject(new Error(`Process exited with code ${code}`));
         return;
-      }
-
-      if (stderr) {
-        log(`stderr: ${stderr}`);
       }
 
       if (displayInfo) {

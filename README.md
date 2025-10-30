@@ -224,15 +224,6 @@ publish/
 **/*.g.cs
 **/Migrations/*.cs
 
-# NuGet packages
-packages/
-
-# Entity Framework
-**/Migrations/
-
-# Razor views (optional - if you want to preserve formatting)
-**/*.cshtml.cs
-
 # Third-party code
 **/ThirdParty/
 **/External/
@@ -243,9 +234,6 @@ packages/
 # Designer files
 **/*.Designer.cs
 **/*.g.cs
-
-# Resource files
-**/*.resx
 
 # Build outputs
 bin/
@@ -261,7 +249,7 @@ obj/
 Use the `--verbose` flag to see which files are being ignored:
 
 ```bash
-csharply organize --verbose ./src
+csharply organize ./src --verbose
 # Output will show:
 # skipped   : src/Generated/Model.cs
 # organized : src/Controllers/UserController.cs

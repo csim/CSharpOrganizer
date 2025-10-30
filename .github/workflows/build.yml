@@ -152,21 +152,21 @@ jobs:
         with:
           node-version: "18"
           cache: "npm"
-          cache-dependency-path: "src/vscode-csharply/package-lock.json"
+          cache-dependency-path: "src/csharply-vscode/package-lock.json"
 
       - name: Install dependencies
         run: |
-          cd src/vscode-csharply
+          cd src/csharply-vscode
           npm ci
 
       - name: Update package.json version
         run: |
-          cd src/vscode-csharply
+          cd src/csharply-vscode
           npm version ${{ needs.version.outputs.version }} --no-git-tag-version
 
       - name: Compile extension
         run: |
-          cd src/vscode-csharply
+          cd src/csharply-vscode
           npm run compile
 
       - name: Install vsce
@@ -174,13 +174,13 @@ jobs:
 
       - name: Package extension
         run: |
-          cd src/vscode-csharply
+          cd src/csharply-vscode
           mkdir -p ../../artifacts/
           vsce package --out ../../artifacts/
 
       - name: Publish to VS Code Marketplace
         run: |
-          cd src/vscode-csharply
+          cd src/csharply-vscode
           vsce publish --pat ${{ secrets.VSCE_PAT }}
 
       - name: Upload extension artifact

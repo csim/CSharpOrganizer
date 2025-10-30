@@ -141,16 +141,12 @@ public partial class OrganizeService(IgnoreFileService ignoreService, OrganizeOp
 
             AddSuccessFile(file);
         }
-        catch (Exception ex)
+        catch
         {
             AddFailFile(file);
 
             if (options.Verbose)
             {
-                Console.Error.WriteLine("-----");
-                Console.Error.WriteLine(ex.ToString());
-                Console.Error.WriteLine("-----");
-
                 throw;
             }
         }

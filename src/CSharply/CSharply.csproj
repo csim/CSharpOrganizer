@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>csharply</ToolCommandName>
+    <AssemblyName>csharply</AssemblyName>
 
     <!-- Package metadata -->
     <PackageId>CSharply</PackageId>

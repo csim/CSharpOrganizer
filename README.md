@@ -98,6 +98,9 @@ Access Modifier Order:
   3. protected
   4. private
 
+Note: If the file contains pre-processor directives such as `#if` or `#region`, the file will not be organized.
+
+
 ### Example
 
 **Before:**

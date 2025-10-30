@@ -13,6 +13,7 @@ namespace CSharply;
 public class ServerService
 {
     private readonly WebApplication _app;
+    IgnoreFileService _ignoreService = new();
 
     public ServerService(int port)
     {
@@ -73,6 +74,37 @@ public class ServerService
                 }
             )
             .WithName("organize")
+            .Accepts<string>("text/plain");
+
+        _app.MapPost(
+                "/ignore",
+                async (HttpContext context) =>
+                {
+                    try
+                    {
+                        using StreamReader reader = new(context.Request.Body);
+                        string filePath = await reader.ReadToEndAsync();
+
+                        FileInfo file = new(filePath);
+                        context.Response.StatusCode = (int)HttpStatusCode.OK;
+
+                        if (!file.Exists)
+                            return "invalid";
+
+                        bool ignore = _ignoreService.Ignore(file);
+                        context.Response.StatusCode = (int)HttpStatusCode.OK;
+
+                        return ignore ? "true" : "false";
+                    }
+                    catch (Exception ex)
+                    {
+                        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+
+                        return ex.Message;
+                    }
+                }
+            )
+            .WithName("ignore")
             .Accepts<string>("text/plain");
     }
 }

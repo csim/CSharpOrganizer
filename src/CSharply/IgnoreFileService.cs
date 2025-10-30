@@ -13,6 +13,9 @@ public class IgnoreFileService
 
     public bool Ignore(FileInfo file)
     {
+        if (!file.Exists)
+            return true;
+
         IgnoreInfo ignoreInfo = GetIgnoreInfo(file.Directory!, []);
 
         if (ignoreInfo.Globs.Count == 0)

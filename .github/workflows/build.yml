@@ -178,6 +178,7 @@ jobs:
           mkdir -p ../../artifacts/
           vsce package --out ../../artifacts/csharply-v${{ needs.version.outputs.version }}.vsix
 
+      # new PAT go to: https://csim.visualstudio.com/_usersSettings/tokens
       - name: Publish to VS Code Marketplace
         run: |
           cd src/csharply-vscode

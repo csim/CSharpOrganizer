@@ -54,9 +54,8 @@ public class ServerService
                     {
                         using StreamReader reader = new(context.Request.Body);
                         string code = await reader.ReadToEndAsync();
-                        string organizedCode = OrganizeService.OrganizeCode(code);
 
-                        return organizedCode;
+                        return OrganizeService.OrganizeCode(code);
                     }
                     catch (Exception ex)
                     {

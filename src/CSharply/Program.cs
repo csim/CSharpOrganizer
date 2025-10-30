@@ -120,10 +120,10 @@ public static class Program
             $"Organized {result.SuccessFiles.Count:N0} file{plural} in {durationContent}";
 
         plural = result.IgnoreFiles.Count == 1 ? string.Empty : "s";
-        string ignoreContent = $" {result.IgnoreFiles.Count:N0} file{plural} ignored";
+        string ignoreContent = $"    {result.IgnoreFiles.Count:N0} file{plural} ignored";
 
         plural = result.FailFiles.Count == 1 ? string.Empty : "s";
-        string failContent = $" {result.FailFiles.Count:N0} file{plural} failed.";
+        string failContent = $"    {result.FailFiles.Count:N0} file{plural} failed.";
 
         Write(successContent);
 

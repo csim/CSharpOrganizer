@@ -48,7 +48,7 @@ public class ServerService
 
         _app.MapPost(
                 "/organize",
-                static async (HttpContext context) =>
+                async context =>
                 {
                     try
                     {

@@ -50,6 +50,7 @@
       "args": [
         "build",
         "./src/CSharply.slnx",
+        "--no-restore",
         "/property:GenerateFullPaths=true",
       ],
       "problemMatcher": "$msCompile",

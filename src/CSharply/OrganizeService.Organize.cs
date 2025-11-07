@@ -138,14 +138,6 @@ public partial class OrganizeService
     {
         subject = subject.WithMembers(OrganizeMembers(subject.Members));
 
-        subject = subject.WithOpenBraceToken(
-            subject.OpenBraceToken.WithoutTrailingBlankLineTrivia()
-        );
-
-        subject = subject.WithCloseBraceToken(
-            subject.CloseBraceToken.WithoutLeadingBlankLineTrivia()
-        );
-
         if (subject.Members.Count > 0)
         {
             subject = subject.ReplaceMember(0, m => m.WithoutLeadingBlankLines());

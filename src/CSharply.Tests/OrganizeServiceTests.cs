@@ -57,6 +57,58 @@ public class OrganizeServiceTests(ITestOutputHelper output, bool debug = false)
     }
 
     [Fact]
+    public void OrganizeCode_Simple_002()
+    {
+        Execute(
+            """
+            // leading namespace comment
+            namespace Text.Namespace1; // namespace comment
+
+            public class Class1
+            {
+
+
+                public bool GetItem(string arg1) { }
+
+                public Class2() { }
+            }
+            """,
+            """
+            // leading namespace comment
+            namespace Text.Namespace1; // namespace comment
+
+            public class Class1
+            {
+                public Class2() { }
+
+                public bool GetItem(string arg1) { }
+            }
+
+            """
+        );
+    }
+
+    [Fact]
+    public void OrganizeCode_Simple_003()
+    {
+        Execute(
+            """
+            // leading namespace comment
+            namespace Text.Namespace1; // namespace comment
+
+            public class Class1 { }
+            """,
+            """
+            // leading namespace comment
+            namespace Text.Namespace1; // namespace comment
+
+            public class Class1 { }
+
+            """
+        );
+    }
+
+    [Fact]
     public void OrganizeCode_Simple_002_UsingsOrder()
     {
         Execute(
